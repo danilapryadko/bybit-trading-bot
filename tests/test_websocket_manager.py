@@ -8,7 +8,14 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from websocket_manager import WebSocketManager
+# Mock pybit module if not installed
+try:
+    from websocket_manager import WebSocketManager
+except ImportError:
+    # Create mock for CI/CD
+    sys.modules['pybit'] = MagicMock()
+    sys.modules['pybit.unified_trading'] = MagicMock()
+    from websocket_manager import WebSocketManager
 
 
 class TestWebSocketManager:
