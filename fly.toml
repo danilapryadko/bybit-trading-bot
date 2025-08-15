@@ -5,16 +5,20 @@ kill_signal = "SIGINT"
 kill_timeout = 5
 
 [build]
-  dockerfile = "Dockerfile.fly"
+  dockerfile = "Dockerfile"
 
 [env]
   ENVIRONMENT = "production"
-  BYBIT_TESTNET = "false"  # Начнем с testnet
+  BYBIT_TESTNET = "true"  # Начнем с testnet
   PORT = "8080"
+  PAPER_TRADING = "true"
+  INITIAL_CAPITAL = "10000"
+  MAX_POSITIONS = "3"
+  RISK_PER_TRADE = "1.0"
 
-# Основной процесс - торговый бот
+# Основной процесс - торговый бот с Telegram
 [processes]
-  bot = "python main.py --strategy adaptive"
+  bot = "python run_with_telegram.py"
   api = "uvicorn web_api:app --host 0.0.0.0 --port 8080"
 
 # Persistent storage для БД и логов
