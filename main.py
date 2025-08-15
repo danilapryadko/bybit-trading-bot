@@ -1,7 +1,10 @@
 """
 Основной модуль торгового бота
+Enhanced with full integration of all components
+Priority: Reliability and error-free operation
 """
 
+import asyncio
 import time
 import logging
 import sys
@@ -11,6 +14,10 @@ import os
 from dotenv import load_dotenv
 import argparse
 
+# Import the integrated trading bot
+from trading_bot import TradingBot as IntegratedTradingBot, TradingConfig
+
+# Legacy imports for backward compatibility
 from bybit_client import BybitClient
 from strategies import RSIStrategy, EMAStrategy, CombinedStrategy, GridStrategy
 from advanced_strategies import (
@@ -222,25 +229,67 @@ class TradingBot:
 
 
 def main():
-    """Главная функция"""
-    parser = argparse.ArgumentParser(description='Bybit Trading Bot')
+    """Главная функция с поддержкой нового интегрированного бота"""
+    parser = argparse.ArgumentParser(description='Bybit Trading Bot - Enhanced Version')
+    
+    # Mode selection
+    parser.add_argument(
+        '--mode',
+        type=str,
+        default='integrated',
+        choices=['integrated', 'legacy'],
+        help='Bot mode: integrated (new) or legacy (old)'
+    )
+    
+    # Legacy options
     parser.add_argument(
         '--strategy',
         type=str,
         default='adaptive',
         choices=['rsi', 'ema', 'combined', 'grid', 'adaptive', 'halving', 'etf', 'crash', 'dca', 'whale', 'kaufman'],
-        help='Trading strategy to use'
+        help='Trading strategy to use (legacy mode)'
     )
+    
+    # Common options
     parser.add_argument(
         '--live',
         action='store_true',
         help='Use live trading (default is testnet)'
     )
     parser.add_argument(
+        '--paper',
+        action='store_true',
+        help='Use paper trading mode (integrated mode only)'
+    )
+    parser.add_argument(
+        '--symbols',
+        type=str,
+        nargs='+',
+        default=['BTCUSDT'],
+        help='Symbols to trade (integrated mode)'
+    )
+    parser.add_argument(
+        '--balance',
+        type=float,
+        default=10000.0,
+        help='Initial balance for trading'
+    )
+    parser.add_argument(
+        '--risk',
+        type=float,
+        default=0.02,
+        help='Risk per trade (2% default)'
+    )
+    parser.add_argument(
+        '--ml',
+        action='store_true',
+        help='Enable ML strategies (integrated mode)'
+    )
+    parser.add_argument(
         '--interval',
         type=int,
         default=60,
-        help='Check interval in seconds (default: 60)'
+        help='Check interval in seconds (legacy mode)'
     )
     
     args = parser.parse_args()
@@ -252,23 +301,63 @@ def main():
         logger.error("Copy .env.example to .env and add your API credentials")
         sys.exit(1)
     
-    # Создать и запустить бота
-    bot = TradingBot(
-        strategy_name=args.strategy,
-        testnet=not args.live
-    )
-    bot.check_interval = args.interval
+    if args.mode == 'integrated':
+        # Run new integrated bot
+        logger.info("=" * 60)
+        logger.info("STARTING INTEGRATED TRADING BOT")
+        logger.info("Priority: RELIABILITY AND ERROR-FREE OPERATION")
+        logger.info("=" * 60)
+        
+        # Create configuration
+        config = TradingConfig(
+            symbols=args.symbols,
+            testnet=not args.live,
+            paper_trading=args.paper or not args.live,  # Default to paper if testnet
+            initial_balance=args.balance,
+            risk_per_trade=args.risk,
+            use_ml_strategies=args.ml,
+            max_positions=min(3, len(args.symbols)),  # Max 3 or number of symbols
+            use_trailing_stops=True,
+            backtest_before_trade=args.ml,  # Backtest if using ML
+        )
+        
+        # Run async bot
+        async def run_integrated():
+            bot = IntegratedTradingBot(config)
+            try:
+                await bot.start()
+            except KeyboardInterrupt:
+                logger.info("Shutting down gracefully...")
+                await bot.stop()
+        
+        # Run the event loop
+        try:
+            asyncio.run(run_integrated())
+        except KeyboardInterrupt:
+            logger.info("Bot stopped by user")
+        except Exception as e:
+            logger.critical(f"Fatal error: {e}")
+            sys.exit(1)
     
-    # Обработка сигнала остановки
-    def signal_handler(sig, frame):
-        logger.info("Received interrupt signal")
-        bot.stop()
-        sys.exit(0)
-    
-    signal.signal(signal.SIGINT, signal_handler)
-    
-    # Запустить бота
-    bot.start()
+    else:
+        # Run legacy bot
+        logger.info("Running in LEGACY mode")
+        bot = TradingBot(
+            strategy_name=args.strategy,
+            testnet=not args.live
+        )
+        bot.check_interval = args.interval
+        
+        # Обработка сигнала остановки
+        def signal_handler(sig, frame):
+            logger.info("Received interrupt signal")
+            bot.stop()
+            sys.exit(0)
+        
+        signal.signal(signal.SIGINT, signal_handler)
+        
+        # Запустить бота
+        bot.start()
 
 
 if __name__ == "__main__":
