@@ -1,256 +1,248 @@
-# Bybit Trading Bot
+# 🤖 Bybit Trading Bot
 
-Автоматизированный торговый бот для криптовалютной биржи Bybit с поддержкой различных торговых стратегий.
+[![CI/CD Pipeline](https://github.com/danilapryadko/bbBot/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/danilapryadko/bbBot/actions/workflows/ci-cd.yml)
+[![Health Check](https://github.com/danilapryadko/bbBot/actions/workflows/health-check.yml/badge.svg)](https://github.com/danilapryadko/bbBot/actions/workflows/health-check.yml)
+[![Deployed on Fly.io](https://img.shields.io/badge/Deployed%20on-Fly.io-purple)](https://bybit-trading-bot.fly.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Анализ рынка 2022-2025
+Automated cryptocurrency trading bot for Bybit exchange with advanced strategies, risk management, and cloud deployment.
 
-На основе анализа последних 3 лет крипторынка, бот включает продвинутые стратегии:
+## 🚀 Live Status
 
-### Ключевые события:
-- **2022**: Крах Terra-Luna ($50B), FTX ($32B), каскад банкротств
-- **2023**: Восстановление +120%, ожидания ETF
-- **2024**: Одобрение spot Bitcoin ETF, халвинг
-- **2025**: Прогноз BTC $180,000
+- 🟢 **Production**: [https://bybit-trading-bot.fly.dev](https://bybit-trading-bot.fly.dev)
+- 📊 **Health Check**: [/health](https://bybit-trading-bot.fly.dev/health)
+- 📈 **Metrics**: [/metrics](https://bybit-trading-bot.fly.dev/metrics)
+- 🔄 **CI/CD**: [GitHub Actions](https://github.com/danilapryadko/bbBot/actions)
 
-## Возможности
+## 📋 Project Status
 
-- 🤖 Несколько торговых стратегий (RSI, EMA, Combined, Grid)
-- 📊 Технический анализ с использованием популярных индикаторов
-- 💰 Управление рисками и расчет размера позиции
-- 📈 Поддержка тестовой сети Bybit
-- 📝 Детальное логирование всех операций
-- ⚡ Real-time мониторинг позиций
+### ✅ Phase 0: Infrastructure (COMPLETED)
+- ✅ Project structure and organization
+- ✅ Docker environment for local development
+- ✅ PostgreSQL database with full schema
+- ✅ GitHub Actions CI/CD pipeline
+- ✅ Fly.io cloud deployment (Singapore region)
+- ✅ Health monitoring and metrics
+- ✅ Automated testing framework
+- ✅ Security scanning with Trivy
+- ✅ Daily performance reports
+- ✅ All base trading strategies implemented
 
-## Установка
+### 🔄 Phase 1: Core Services (IN PROGRESS)
+- [ ] WebSocket market data streaming
+- [ ] Real-time order management system
+- [ ] Advanced risk management
+- [ ] Position tracking and P&L calculation
+- [ ] Backtesting framework
+- [ ] Strategy optimization
 
-1. Клонируйте репозиторий:
+### 📅 Phase 2: Advanced Features (PLANNED)
+- [ ] Machine learning price predictions
+- [ ] Sentiment analysis integration
+- [ ] Multi-exchange support
+- [ ] Portfolio management
+- [ ] Telegram bot interface
+- [ ] Web dashboard
+
+## 🛠 Technology Stack
+
+- **Language**: Python 3.11
+- **Exchange API**: Bybit API v5
+- **Database**: PostgreSQL + Redis
+- **Deployment**: Fly.io (Global Edge Network)
+- **CI/CD**: GitHub Actions
+- **Monitoring**: Prometheus + Grafana
+- **Container**: Docker
+- **Region**: Singapore (Low latency to Bybit)
+
+## 📊 Trading Strategies
+
+### Classic Strategies
+- **RSI Strategy**: Oversold/overbought signals
+- **EMA Strategy**: Moving average crossovers
+- **Grid Strategy**: Automated grid trading
+- **Combined Strategy**: Multi-indicator approach
+
+### Advanced Strategies (2022-2025 Market Analysis)
+- **Adaptive Strategy** ⭐: Auto-adjusts to market conditions
+- **Kaufman Strategy**: Adaptive moving average with efficiency ratio
+- **DCA Strategy**: Dollar-cost averaging for accumulation
+- **Whale Following**: Track and follow large traders
+- **Crash Detection**: Avoid market crashes like Terra/FTX
+- **ETF Momentum**: Trade on ETF inflows
+
+## 🚀 Quick Start
+
+### Cloud Deployment (Already Running!)
+
+The bot is already deployed at: https://bybit-trading-bot.fly.dev
+
+Monitor it:
 ```bash
-cd /Users/danilapryadkoicloud.com/Documents/bybit-trading-bot
+# View logs
+fly logs --app bybit-trading-bot
+
+# SSH into container
+fly ssh console --app bybit-trading-bot
+
+# Check status
+fly status --app bybit-trading-bot
 ```
 
-2. Установите зависимости:
+### Local Development
+
+1. Clone the repository:
+```bash
+git clone https://github.com/danilapryadko/bbBot.git
+cd bbBot
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Настройте API ключи:
+3. Set up environment:
 ```bash
 cp .env.example .env
-```
-Отредактируйте файл `.env` и добавьте свои API ключи от Bybit.
-
-## Получение API ключей
-
-1. Зарегистрируйтесь на [Bybit Testnet](https://testnet.bybit.com/) для тестирования
-2. Перейдите в API Management в настройках аккаунта
-3. Создайте новый API ключ с необходимыми разрешениями:
-   - Чтение позиций
-   - Торговля спот/деривативы
-   - Управление позициями
-
-## Конфигурация
-
-Отредактируйте файл `.env`:
-
-```env
-# API ключи
-API_KEY=ваш_api_ключ
-API_SECRET=ваш_секретный_ключ
-
-# Торговые параметры
-TESTNET=True                    # Использовать тестовую сеть
-SYMBOL=BTCUSDT                  # Торговая пара
-LEVERAGE=10                     # Кредитное плечо
-POSITION_SIZE=100               # Размер позиции в USDT
-STOP_LOSS_PERCENT=2.0          # Стоп-лосс в %
-TAKE_PROFIT_PERCENT=3.0        # Тейк-профит в %
-
-# Параметры стратегий
-RSI_PERIOD=14                   # Период RSI
-RSI_OVERSOLD=30                 # Уровень перепроданности
-RSI_OVERBOUGHT=70               # Уровень перекупленности
-EMA_SHORT=9                     # Короткая EMA
-EMA_LONG=21                     # Длинная EMA
+# Edit .env with your API keys
 ```
 
-## Использование
-
-### Запуск с адаптивной стратегией (рекомендуется):
+4. Start Docker services:
 ```bash
-python main.py --strategy adaptive
+make dev
 ```
 
-### Запуск DCA стратегии для накопления:
+5. Run the bot:
 ```bash
-python main.py --strategy dca
+make run-testnet  # For testnet
+make run          # For production
 ```
 
-### Запуск бота с стратегией RSI:
+## 📈 Performance Metrics
+
+| Metric | Target | Current Status |
+|--------|--------|----------------|
+| Deployment | ✅ 24/7 | **Active on Fly.io** |
+| Uptime | > 99.9% | Monitoring active |
+| Latency | < 50ms | ~10ms (Singapore) |
+| Health Checks | Every 5 min | ✅ Automated |
+| Auto-deploy | On push | ✅ GitHub Actions |
+
+## 🔧 Configuration
+
+Current production configuration:
+- **Mode**: TESTNET (safe testing)
+- **Symbol**: BTCUSDT
+- **Leverage**: 1x (no leverage)
+- **Position Size**: $10 (minimum)
+- **Stop Loss**: 2%
+- **Take Profit**: 3%
+- **Strategy**: Adaptive
+
+## 🛡 Security
+
+- ✅ API keys stored as Fly.io secrets
+- ✅ Automated security scanning
+- ✅ No hardcoded credentials
+- ✅ HTTPS only endpoints
+- ✅ Rate limiting implemented
+
+## 📊 Monitoring
+
+### Automated Monitoring
+- **Health checks**: Every 5 minutes via GitHub Actions
+- **Daily reports**: Automated performance reports
+- **Alerts**: Telegram notifications (optional)
+- **Metrics**: Prometheus format at `/metrics`
+
+### Manual Monitoring
 ```bash
-python main.py --strategy rsi
+# Real-time logs
+fly logs --app bybit-trading-bot
+
+# Check health
+curl https://bybit-trading-bot.fly.dev/health
+
+# View metrics
+curl https://bybit-trading-bot.fly.dev/metrics
 ```
 
-### Запуск с комбинированной стратегией:
-```bash
-python main.py --strategy combined
+## 🚀 Deployment Pipeline
+
+```mermaid
+graph LR
+    A[Push to GitHub] --> B[GitHub Actions]
+    B --> C[Run Tests]
+    C --> D[Security Scan]
+    D --> E[Build Docker]
+    E --> F[Deploy to Fly.io]
+    F --> G[Health Check]
+    G --> H[Live on Cloud]
 ```
 
-### Запуск на реальном счете (осторожно!):
-```bash
-python main.py --strategy combined --live
+## 📝 API Documentation
+
+### Public Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Welcome page |
+| `/health` | GET | Health check |
+| `/status` | GET | Bot status |
+| `/metrics` | GET | Prometheus metrics |
+
+### Health Check Response
+```json
+{
+  "status": "healthy",
+  "uptime_seconds": 3600,
+  "checks": {
+    "bot": true,
+    "database": true,
+    "api": true
+  }
+}
 ```
 
-### Изменить интервал проверки (в секундах):
-```bash
-python main.py --strategy rsi --interval 30
-```
+## 🔄 Development Workflow
 
-## Доступные стратегии
+1. **Local Development**: Make changes locally
+2. **Test**: Run `make test`
+3. **Commit**: Push to GitHub
+4. **Auto Deploy**: GitHub Actions deploys to Fly.io
+5. **Monitor**: Check logs and metrics
 
-### Классические стратегии:
+## 📚 Documentation
 
-#### 1. RSI Strategy
-Торговля на основе индекса относительной силы (RSI):
-- Покупка при выходе из зоны перепроданности
-- Продажа при выходе из зоны перекупленности
+- [Deployment Guide](DEPLOYMENT_GUIDE.md)
+- [Implementation Plan](DETAILED_IMPLEMENTATION_PLAN.md)
+- [Phase 0 Details](PHASE_0_DETAILED.md)
+- [Market Analysis](MARKET_ANALYSIS_2022_2025.md)
+- [Fly.io Deployment](FLY_IO_DEPLOYMENT.md)
 
-#### 2. EMA Strategy
-Торговля на основе пересечения экспоненциальных скользящих средних:
-- Покупка при бычьем пересечении (короткая EMA пересекает длинную снизу вверх)
-- Продажа при медвежьем пересечении
+## 🤝 Contributing
 
-#### 3. Combined Strategy
-Комбинированная стратегия с использованием нескольких индикаторов:
-- RSI
-- EMA crossover
-- MACD
-- Bollinger Bands
-- Взвешенный сигнал на основе всех индикаторов
+1. Fork the repository
+2. Create feature branch
+3. Commit changes
+4. Push to branch
+5. Open Pull Request
 
-#### 4. Grid Strategy
-Сеточная стратегия:
-- Размещение сетки лимитных ордеров
-- Автоматическая покупка на падении и продажа на росте
+## 📞 Support
 
-### Продвинутые стратегии (2022-2025):
+- **Repository**: [GitHub](https://github.com/danilapryadko/bbBot)
+- **Issues**: [GitHub Issues](https://github.com/danilapryadko/bbBot/issues)
+- **Live Bot**: [https://bybit-trading-bot.fly.dev](https://bybit-trading-bot.fly.dev)
 
-#### 5. Adaptive Strategy ⭐
-**Рекомендуется!** Адаптивная стратегия меняет подход в зависимости от рынка:
-- Определяет рыночный режим (BULL/BEAR/CRASH/ACCUMULATION)
-- Комбинирует несколько стратегий
-- Обнаруживает крахи как Terra-Luna/FTX
-- Автоматически меняет размеры позиций
+## ⚠️ Disclaimer
 
-#### 6. Halving Strategy
-Стратегия на основе циклов халвинга:
-- Накопление за 6 месяцев до халвинга
-- Удержание год после халвинга
-- Исторически прибыльная
+This bot is for educational purposes. Cryptocurrency trading carries significant risk. Currently running on TESTNET for safety.
 
-#### 7. ETF Momentum Strategy
-Стратегия на основе притока средств в ETF:
-- Усиленные сигналы после одобрения ETF
-- Моментум-торговля
+## 📄 License
 
-#### 8. Crash Detection Strategy
-Обнаружение и избегание крахов:
-- Мониторинг аномальных объемов
-- Обнаружение death spiral
-- Экстренный выход из позиций
+MIT License - see [LICENSE](LICENSE) file
 
-#### 9. DCA Strategy
-Dollar Cost Averaging для медвежьего рынка:
-- Покупка на уровнях -30%, -50%, -70%
-- Регулярные покупки
-- Долгосрочное накопление
+---
 
-#### 10. Whale Following Strategy
-Следование за крупными игроками:
-- Обнаружение крупных сделок
-- Анализ аномальных объемов
-- Копирование действий китов
-
-## Структура проекта
-
-```
-bybit-trading-bot/
-├── main.py              # Главный модуль бота
-├── bybit_client.py      # API клиент для Bybit
-├── indicators.py        # Технические индикаторы
-├── strategies.py        # Торговые стратегии
-├── risk_manager.py      # Управление рисками
-├── requirements.txt     # Зависимости
-├── .env.example        # Пример конфигурации
-└── README.md           # Документация
-```
-
-## Управление рисками
-
-Бот включает модуль управления рисками:
-- Максимальный дневной убыток
-- Ограничение размера позиции
-- Расчет размера позиции на основе риска
-- Автоматическая остановка при достижении лимитов
-
-## Логирование
-
-Все операции логируются в файл `trading_bot.log` и выводятся в консоль.
-
-## Безопасность
-
-⚠️ **ВАЖНО:**
-- Никогда не делитесь своими API ключами
-- Сначала тестируйте стратегии на тестовой сети
-- Используйте только те средства, которые готовы потерять
-- Регулярно проверяйте и обновляйте стоп-лоссы
-
-## Тестирование
-
-Для тестирования отдельных компонентов:
-
-```bash
-# Тест клиента
-python bybit_client.py
-
-# Тест индикаторов
-python indicators.py
-
-# Тест стратегий
-python strategies.py
-
-# Тест управления рисками
-python risk_manager.py
-```
-
-## Мониторинг
-
-Бот отображает следующую информацию:
-- Текущий баланс
-- Открытые позиции
-- Unrealized PnL
-- Текущая цена и 24h изменение
-- Торговые сигналы и уверенность
-- Статистика торговли
-
-## Остановка бота
-
-Для корректной остановки используйте `Ctrl+C`. Бот автоматически:
-- Закроет все открытые позиции
-- Отменит все активные ордера
-- Сохранит статистику
-
-## Отказ от ответственности
-
-Этот бот предназначен для образовательных целей. Торговля криптовалютой сопряжена с высоким риском. Используйте на свой страх и риск.
-
-## Поддержка
-
-При возникновении проблем:
-1. Проверьте логи в `trading_bot.log`
-2. Убедитесь, что API ключи корректны
-3. Проверьте баланс на счете
-4. Убедитесь в правильности параметров в `.env`
-
-## Лицензия
-
-MIT
+**📈 Bot Status**: Live on Fly.io | **🔄 Auto-Deploy**: Enabled | **✅ Phase 0**: Complete
