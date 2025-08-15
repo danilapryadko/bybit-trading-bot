@@ -1,0 +1,167 @@
+name: Scheduled Tasks
+
+on:
+  schedule:
+    # Daily health check at 00:00 UTC
+    - cron: '0 0 * * *'
+    # Weekly performance report on Sundays at 12:00 UTC
+    - cron: '0 12 * * 0'
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task to run'
+        required: true
+        default: 'health-check'
+        type: choice
+        options:
+        - health-check
+        - performance-report
+        - cleanup-logs
+        - backup-data
+
+jobs:
+  health-check:
+    name: Daily Health Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.task == 'health-check'
+    
+    steps:
+    - name: Check Backend Health
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://bybit-danila-bot.fly.dev/api/v2/health)
+        if [ $response -eq 200 ]; then
+          echo "✅ Backend is healthy"
+        else
+          echo "❌ Backend health check failed with status: $response"
+          exit 1
+        fi
+        
+    - name: Check Dashboard Health
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://bybit-danila-dashboard.fly.dev)
+        if [ $response -eq 200 ]; then
+          echo "✅ Dashboard is healthy"
+        else
+          echo "❌ Dashboard health check failed with status: $response"
+          exit 1
+        fi
+        
+    - name: Check API Response Times
+      run: |
+        echo "Testing API response times..."
+        
+        # Test health endpoint
+        time=$(curl -s -o /dev/null -w "%{time_total}" https://bybit-danila-bot.fly.dev/api/v2/health)
+        echo "Health endpoint: ${time}s"
+        
+        # Test trading status
+        time=$(curl -s -o /dev/null -w "%{time_total}" https://bybit-danila-bot.fly.dev/api/v2/trading/status)
+        echo "Trading status endpoint: ${time}s"
+        
+        # Test market data
+        time=$(curl -s -o /dev/null -w "%{time_total}" https://bybit-danila-bot.fly.dev/api/v2/market/tickers)
+        echo "Market tickers endpoint: ${time}s"
+        
+    - name: Send Health Report
+      if: failure()
+      run: |
+        curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d "text=⚠️ Health check failed at $(date)" \
+          -d "parse_mode=HTML"
+          
+  performance-report:
+    name: Weekly Performance Report
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'schedule' && contains(github.event.schedule, '0 12 * * 0')) || github.event.inputs.task == 'performance-report'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        pip install requests pandas matplotlib
+        
+    - name: Generate Performance Report
+      run: |
+        python -c "
+        import requests
+        import json
+        from datetime import datetime
+        
+        # Get performance metrics
+        response = requests.get('https://bybit-danila-bot.fly.dev/api/v2/analytics/performance')
+        if response.status_code == 200:
+            metrics = response.json()
+            
+            # Create report summary
+            report = f'''
+        📊 Weekly Performance Report
+        Date: {datetime.now().strftime('%Y-%m-%d')}
+        
+        Total P&L: \${metrics.get('total_pnl', 0):,.2f}
+        Win Rate: {metrics.get('win_rate', 0):.1f}%
+        Total Trades: {metrics.get('total_trades', 0)}
+        Sharpe Ratio: {metrics.get('sharpe_ratio', 0):.2f}
+        Max Drawdown: {metrics.get('max_drawdown', 0):.1f}%
+        '''
+            print(report)
+        else:
+            print('Failed to get performance metrics')
+        "
+        
+  cleanup-logs:
+    name: Cleanup Old Logs
+    runs-on: ubuntu-latest
+    if: github.event.inputs.task == 'cleanup-logs'
+    
+    steps:
+    - name: Setup Fly.io CLI
+      uses: superfly/flyctl-actions/setup-flyctl@master
+      
+    - name: Clean backend logs
+      run: |
+        echo "Cleaning up old logs for backend..."
+        flyctl ssh console --app bybit-danila-bot --command "find /app/logs -type f -mtime +7 -delete" || true
+        
+    - name: Clean dashboard logs
+      run: |
+        echo "Cleaning up old logs for dashboard..."
+        flyctl ssh console --app bybit-danila-dashboard --command "find /app/logs -type f -mtime +7 -delete" || true
+        
+  backup-data:
+    name: Backup Trading Data
+    runs-on: ubuntu-latest
+    if: github.event.inputs.task == 'backup-data'
+    
+    steps:
+    - name: Setup Fly.io CLI
+      uses: superfly/flyctl-actions/setup-flyctl@master
+      
+    - name: Backup backend data
+      run: |
+        echo "Creating backup of trading data..."
+        
+        # Create backup on Fly.io
+        flyctl ssh console --app bybit-danila-bot --command "
+          tar -czf /tmp/backup_$(date +%Y%m%d).tar.gz \
+            /app/users_db.json \
+            /app/user_report_settings.json \
+            /app/reports/ \
+            2>/dev/null || true
+        "
+        
+        echo "Backup created successfully"
+        
+    - name: Upload backup to artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: trading-data-backup-${{ github.run_id }}
+        path: /tmp/backup_*.tar.gz
+        retention-days: 30

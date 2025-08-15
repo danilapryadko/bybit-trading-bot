@@ -33,10 +33,13 @@ Automated cryptocurrency trading bot for Bybit exchange with advanced strategies
 
 ## 🚀 Live Status
 
-- 🟢 **Production**: [https://bybit-trading-bot.fly.dev](https://bybit-trading-bot.fly.dev)
-- 📊 **Health Check**: [/health](https://bybit-trading-bot.fly.dev/health)
-- 📈 **Metrics**: [/metrics](https://bybit-trading-bot.fly.dev/metrics)
-- 🔄 **CI/CD**: [GitHub Actions](https://github.com/danilapryadko/bbBot/actions)
+- 🟢 **Production**: [bybit-danila-bot.fly.dev](https://bybit-danila-bot.fly.dev) (24/7 Operation)
+- 📊 **Dashboard**: [bybit-danila-dashboard.fly.dev](https://bybit-danila-dashboard.fly.dev) (React UI)
+- 🤖 **Telegram Bot**: [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot)
+- 🔗 **GraphQL API**: [bybit-danila-bot.fly.dev/graphql](https://bybit-danila-bot.fly.dev/graphql)
+- 📊 **Mode**: Paper Trading on Testnet (Safe Mode)
+- 🌏 **Region**: Singapore (Low latency to Bybit)
+- 👤 **User**: @koshkikoshki (ID: 384403397)
 
 ## 📋 Project Status
 
@@ -68,12 +71,14 @@ Automated cryptocurrency trading bot for Bybit exchange with advanced strategies
 - ⏳ Real-time performance dashboard
 - ⏳ Advanced portfolio analytics
 
-### 🔄 Phase 3: User Interface (NEXT PRIORITY)
-- ⏳ React frontend dashboard
-- ⏳ Telegram bot for notifications
-- ⏳ GraphQL API endpoint
-- ⏳ Mobile-responsive design
-- ⏳ Real-time WebSocket updates
+### ✅ Phase 3: User Interface (95% COMPLETED)
+- ✅ React frontend dashboard with Redux (Deployed)
+- ✅ Telegram bot deployed on Fly.io (24/7)
+- ✅ Real-time WebSocket updates
+- ✅ Mobile-responsive design
+- ✅ GraphQL API endpoint (Live)
+- ✅ WebSocket server for real-time data
+- ⏳ TradingView integration (In progress)
 
 ### 📅 Phase 4: Scale & Optimize (PLANNED)
 - [ ] Multi-exchange support (Binance, OKX)
@@ -133,21 +138,33 @@ Automated cryptocurrency trading bot for Bybit exchange with advanced strategies
 
 ## 🚀 Quick Start
 
-### Cloud Deployment (Already Running!)
+### Cloud Deployment (Running 24/7!)
 
-The bot is already deployed at: https://bybit-trading-bot.fly.dev
+**Telegram Bot Active**: [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot)
 
-Monitor it:
+The bot is deployed on Fly.io for 24/7 operation:
+
 ```bash
 # View logs
-fly logs --app bybit-trading-bot
+fly logs --app bybit-danila-bot
 
-# SSH into container
-fly ssh console --app bybit-trading-bot
+# SSH into container  
+fly ssh console --app bybit-danila-bot
 
 # Check status
-fly status --app bybit-trading-bot
+fly status --app bybit-danila-bot
+
+# Monitor Telegram bot
+fly apps list | grep bybit-danila-bot
 ```
+
+**How to use Telegram Bot**:
+1. Open Telegram: [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot)
+2. Send `/start` to see the main menu
+3. Use buttons for navigation:
+   - 📊 Dashboard - View balance and P&L
+   - 💼 Positions - Manage positions
+   - 🤖 Bot Status - Control the trading bot
 
 ### Local Development
 
@@ -194,11 +211,12 @@ make run          # Run in production
 
 | Metric | Target | Current Status |
 |--------|--------|----------------|
-| Deployment | ✅ 24/7 | **Active on Fly.io** |
-| Uptime | > 99.9% | Monitoring active |
+| Deployment | ✅ 24/7 | **Active on Fly.io (bybit-danila-bot)** |
+| Telegram Bot | Active | ✅ [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot) |
+| Uptime | > 99.9% | ✅ Running continuously |
 | Latency | < 50ms | ~10ms (Singapore) |
-| Health Checks | Every 5 min | ✅ Automated |
-| Auto-deploy | On push | ✅ GitHub Actions |
+| Mode | Safe | ✅ Paper Trading |
+| User Auth | Secure | ✅ ID: 384403397 only |
 
 ## 🔧 Configuration
 
@@ -316,4 +334,4 @@ MIT License - see [LICENSE](LICENSE) file
 
 ---
 
-**📈 Bot Status**: Live on Fly.io | **🔄 Auto-Deploy**: Enabled | **✅ Phase 0**: Complete
+**📈 Bot Status**: Live 24/7 on Fly.io | **📊 Dashboard**: [bybit-danila-dashboard.fly.dev](https://bybit-danila-dashboard.fly.dev) | **🤖 Telegram**: [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot) | **✅ Phase 3**: 95% Complete

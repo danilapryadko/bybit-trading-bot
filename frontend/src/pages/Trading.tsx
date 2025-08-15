@@ -77,10 +77,10 @@ const Trading: React.FC = () => {
     activeOrders,
     orderHistory,
     tradingSignals,
-    selectedStrategy,
+    // selectedStrategy,
   } = useAppSelector(state => state.trading);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 

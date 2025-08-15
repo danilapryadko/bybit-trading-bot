@@ -1,0 +1,13 @@
+{
+  "admin": {
+    "id": "user_1755264229.488302",
+    "username": "admin",
+    "email": "admin@bybit-bot.com",
+    "password_hash": "$2b$12$UH56hL.AZfNVUtjxpSdaXOXm/Qc/bY8A7he96Xqdy0mIZg/VmZZDC",
+    "role": "admin",
+    "telegram_id": null,
+    "created_at": "2025-08-15T16:23:49.726415",
+    "last_login": null,
+    "is_active": true
+  }
+}

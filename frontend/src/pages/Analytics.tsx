@@ -22,14 +22,14 @@ import { setSelectedTimeframe } from '../store/slices/analyticsSlice';
 const Analytics: React.FC = () => {
   const dispatch = useAppDispatch();
   const {
-    performanceHistory,
+    // performanceHistory,
     strategyPerformance,
     marketAnalysis,
     selectedTimeframe,
   } = useAppSelector(state => state.analytics);
 
   const handleTimeframeChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     newTimeframe: '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'
   ) => {
     if (newTimeframe) {
@@ -46,10 +46,10 @@ const Analytics: React.FC = () => {
     }).format(price);
   };
 
-  const formatPercent = (percent: number) => {
-    const formatted = percent.toFixed(2);
-    return percent >= 0 ? `+${formatted}%` : `${formatted}%`;
-  };
+  // const _formatPercent = (percent: number) => {
+  //   const formatted = percent.toFixed(2);
+  //   return percent >= 0 ? `+${formatted}%` : `${formatted}%`;
+  // };
 
   // Calculate summary metrics
   const totalPnl = strategyPerformance.reduce((sum, s) => sum + s.totalPnl, 0);

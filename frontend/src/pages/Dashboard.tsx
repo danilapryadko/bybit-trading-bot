@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Grid,
   Card,
@@ -14,6 +14,9 @@ import {
   TableHead,
   TableRow,
   Paper,
+  FormControl,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -23,12 +26,14 @@ import {
 } from '@mui/icons-material';
 import { useAppSelector } from '../store/hooks';
 import { subscribeToChannel } from '../services/websocket';
+import TradingChart from '../components/TradingChart';
 
 const Dashboard: React.FC = () => {
   const { tickers, watchlist, isConnected } = useAppSelector(state => state.market);
   const { currentBalance, availableBalance } = useAppSelector(state => state.trading);
   const { positions, metrics } = useAppSelector(state => state.positions);
   const { isTradingEnabled, isPaperTrading, activeOrders } = useAppSelector(state => state.trading);
+  const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT');
 
   useEffect(() => {
     // Subscribe to watchlist symbols
@@ -225,6 +230,28 @@ const Dashboard: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
+        </CardContent>
+      </Card>
+
+      {/* TradingView Chart */}
+      <Card sx={{ mt: 3 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">
+              Price Chart
+            </Typography>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <Select
+                value={selectedSymbol}
+                onChange={(e) => setSelectedSymbol(e.target.value)}
+              >
+                {watchlist.map(symbol => (
+                  <MenuItem key={symbol} value={symbol}>{symbol}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          <TradingChart symbol={selectedSymbol} height={400} />
         </CardContent>
       </Card>
 

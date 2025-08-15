@@ -1,92 +1,65 @@
 # fly.toml - Configuration for Fly.io deployment
-app = "bybit-trading-bot"
+app = "bybit-danila-bot"
 primary_region = "sin"  # Singapore - близко к Bybit серверам
 kill_signal = "SIGINT"
 kill_timeout = 5
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "Dockerfile.fly"
 
 [env]
   ENVIRONMENT = "production"
-  BYBIT_TESTNET = "true"  # Начнем с testnet
+  BYBIT_TESTNET = "true"
   PORT = "8080"
   PAPER_TRADING = "true"
   INITIAL_CAPITAL = "10000"
   MAX_POSITIONS = "3"
   RISK_PER_TRADE = "1.0"
 
-# Основной процесс - торговый бот с Telegram
+# Основной процесс - торговый бот с Telegram + GraphQL
 [processes]
-  bot = "python run_with_telegram.py"
-  api = "uvicorn web_api:app --host 0.0.0.0 --port 8080"
+  bot = "python start_with_graphql.py"
 
 # Persistent storage для БД и логов
 [mounts]
   source = "bot_data"
   destination = "/data"
 
-# HTTP сервис для API и мониторинга
+# HTTP service for GraphQL API and WebSocket
 [[services]]
   http_checks = []
-  internal_port = 8080
-  processes = ["api"]
+  internal_port = 8000
+  processes = ["bot"]  # Link to bot process
   protocol = "tcp"
   script_checks = []
-
+  
   [services.concurrency]
     hard_limit = 25
     soft_limit = 20
     type = "connections"
-
+  
   [[services.ports]]
     force_https = true
     handlers = ["http"]
     port = 80
-
+  
   [[services.ports]]
     handlers = ["tls", "http"]
     port = 443
-
+  
   [[services.tcp_checks]]
-    grace_period = "10s"
+    grace_period = "1s"
     interval = "15s"
     restart_limit = 0
     timeout = "2s"
 
-  [[services.http_checks]]
-    interval = "10s"
-    grace_period = "5s"
-    method = "get"
-    path = "/health"
-    protocol = "http"
-    timeout = "2s"
-    tls_skip_verify = false
-    headers = {}
-
-# Метрики для Prometheus
+# WebSocket service
 [[services]]
-  internal_port = 9090
-  protocol = "tcp"
+  http_checks = []
+  internal_port = 8001
   processes = ["bot"]
+  protocol = "tcp"
   
   [[services.ports]]
-    port = 9090
-
-# Масштабирование
-[metrics]
-  port = 9090
-  path = "/metrics"
-
-# Проверки здоровья
-[checks]
-  [checks.bot_health]
-    type = "http"
-    interval = "30s"
-    timeout = "5s"
-    method = "GET"
-    path = "/health"
-    port = 8080
-
-# Переменные окружения (чувствительные данные добавляются через fly secrets)
-# fly secrets set API_KEY=xxx API_SECRET=yyy
+    handlers = ["tls", "http"]
+    port = 8001

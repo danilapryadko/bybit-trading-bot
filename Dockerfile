@@ -48,5 +48,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose ports
 EXPOSE 8000 8080
 
-# Run the application with Telegram bot
-CMD ["python", "run_with_telegram.py"]
+# Run the simplified Telegram bot
+CMD ["python", "start_telegram_bot.py"]

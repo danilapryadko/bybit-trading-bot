@@ -78,10 +78,16 @@ class Position:
 class RiskManagerV2:
     """Enhanced risk management with advanced features"""
     
-    def __init__(self, account_balance: float = 10000.0, risk_profile: Optional[RiskProfile] = None):
+    def __init__(self, account_balance: float = 10000.0, risk_profile: Optional[RiskProfile] = None,
+                 max_position_size: float = 0.2, max_daily_loss: float = 0.05, max_drawdown: float = 0.15):
         self.account_balance = account_balance
         self.initial_balance = account_balance
         self.risk_profile = risk_profile or RiskProfile()
+        
+        # Override with constructor params if provided
+        self.max_position_size = max_position_size
+        self.max_daily_loss = max_daily_loss
+        self.max_drawdown = max_drawdown
         
         # Position tracking
         self.positions = {}  # symbol -> Position
@@ -653,6 +659,82 @@ class RiskManagerV2:
                 self.returns_history.append(daily_return)
             
             logger.info("Daily metrics reset")
+    
+    def validate_order(self, symbol: str, side: str, quantity: float, price: float) -> Tuple[bool, str]:
+        """Validate an order against risk limits"""
+        try:
+            # Check if we have too many positions
+            if len(self.positions) >= self.risk_profile.max_positions:
+                return False, f"Maximum positions ({self.risk_profile.max_positions}) reached"
+            
+            # Calculate order value
+            order_value = quantity * price
+            
+            # Check position size limit
+            max_size = self.account_balance * self.max_position_size
+            if order_value > max_size:
+                return False, f"Order value ${order_value:.2f} exceeds max position size ${max_size:.2f}"
+            
+            # Check daily loss limit
+            if abs(self.daily_pnl) >= self.account_balance * self.max_daily_loss:
+                return False, f"Daily loss limit reached (${abs(self.daily_pnl):.2f})"
+            
+            # Check drawdown limit
+            current_dd = (self.initial_balance - self.account_balance) / self.initial_balance
+            if current_dd >= self.max_drawdown:
+                return False, f"Maximum drawdown reached ({current_dd:.1%})"
+            
+            # Check correlation with existing positions
+            if symbol in self.positions:
+                return False, f"Position already exists for {symbol}"
+            
+            # All checks passed
+            return True, "Order validated successfully"
+            
+        except Exception as e:
+            logger.error(f"Error validating order: {e}")
+            return False, f"Validation error: {str(e)}"
+    
+    def calculate_position_size(self, balance: float, price: float, risk_percent: float) -> float:
+        """Calculate position size based on risk percentage"""
+        risk_amount = balance * (risk_percent / 100)
+        position_size = risk_amount / price
+        
+        # Apply max position size limit
+        max_size = balance * self.max_position_size / price
+        return min(position_size, max_size)
+    
+    def check_risk_limits(self, balance: float) -> bool:
+        """Check if risk limits are exceeded"""
+        # Check daily loss
+        if abs(self.daily_pnl) >= balance * self.max_daily_loss:
+            return False
+        
+        # Check drawdown
+        current_dd = (self.initial_balance - balance) / self.initial_balance
+        if current_dd >= self.max_drawdown:
+            return False
+        
+        return True
+    
+    def update_daily_pnl(self, pnl: float):
+        """Update daily P&L tracking"""
+        self.daily_pnl += pnl
+    
+    def update_settings(self, max_position_size: float = None, max_daily_loss: float = None, 
+                       max_drawdown: float = None):
+        """Update risk management settings"""
+        if max_position_size is not None:
+            self.max_position_size = max_position_size
+            self.risk_profile.max_position_size = max_position_size
+        
+        if max_daily_loss is not None:
+            self.max_daily_loss = max_daily_loss
+            self.risk_profile.max_daily_loss = max_daily_loss
+        
+        if max_drawdown is not None:
+            self.max_drawdown = max_drawdown
+            self.risk_profile.max_drawdown = max_drawdown
     
     def get_risk_report(self) -> Dict[str, Any]:
         """Generate comprehensive risk report"""
