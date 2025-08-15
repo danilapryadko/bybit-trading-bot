@@ -7,6 +7,30 @@
 
 Automated cryptocurrency trading bot for Bybit exchange with advanced strategies, risk management, and cloud deployment.
 
+## ⭐ Key Features
+
+### 🎯 Priority: Reliability & Safety
+- **Paper Trading Mode**: Test strategies without real money
+- **Comprehensive Error Handling**: Auto-recovery and reconnection
+- **Risk Management V2**: Kelly Criterion, VaR, trailing stops
+- **Daily Loss Limits**: Automatic trading halt on max loss
+- **Multi-layer Safety**: Position limits, correlation checks, drawdown protection
+
+### 🤖 Advanced Trading
+- **Real-time WebSocket**: Low-latency market data streaming
+- **Smart Order Routing**: Iceberg orders, order splitting
+- **ML Strategies**: LSTM, Random Forest, XGBoost ensemble
+- **Backtesting Engine**: Historical simulation with Monte Carlo
+- **100+ Indicators**: Complete technical analysis toolkit
+
+### 📊 New in v2.0
+- ✅ Full integration of all components
+- ✅ Async architecture for better performance
+- ✅ Machine learning predictions
+- ✅ Advanced risk management
+- ✅ Paper trading mode
+- ✅ Multi-symbol support
+
 ## 🚀 Live Status
 
 - 🟢 **Production**: [https://bybit-trading-bot.fly.dev](https://bybit-trading-bot.fly.dev)
@@ -16,7 +40,7 @@ Automated cryptocurrency trading bot for Bybit exchange with advanced strategies
 
 ## 📋 Project Status
 
-### ✅ Phase 0: Infrastructure (COMPLETED)
+### ✅ Phase 0: Infrastructure (100% COMPLETED)
 - ✅ Project structure and organization
 - ✅ Docker environment for local development
 - ✅ PostgreSQL database with full schema
@@ -28,32 +52,61 @@ Automated cryptocurrency trading bot for Bybit exchange with advanced strategies
 - ✅ Daily performance reports
 - ✅ All base trading strategies implemented
 
-### 🔄 Phase 1: Core Services (IN PROGRESS)
-- [ ] WebSocket market data streaming
-- [ ] Real-time order management system
-- [ ] Advanced risk management
-- [ ] Position tracking and P&L calculation
-- [ ] Backtesting framework
-- [ ] Strategy optimization
+### ✅ Phase 1: Core Trading Services (100% COMPLETED)
+- ✅ WebSocket market data streaming with auto-reconnection
+- ✅ Real-time order management system with smart routing
+- ✅ Advanced risk management V2 (Kelly Criterion, VaR, trailing stops)
+- ✅ Position tracking and P&L calculation
+- ✅ Data normalization pipeline
+- ✅ Order lifecycle management
 
-### 📅 Phase 2: Advanced Features (PLANNED)
-- [ ] Machine learning price predictions
-- [ ] Sentiment analysis integration
-- [ ] Multi-exchange support
-- [ ] Portfolio management
-- [ ] Telegram bot interface
-- [ ] Web dashboard
+### ✅ Phase 2: Strategy & Analytics (60% COMPLETED)
+- ✅ Backtesting framework with Monte Carlo simulation
+- ✅ Machine learning strategies (LSTM, Random Forest, XGBoost)
+- ✅ Feature engineering pipeline (100+ indicators)
+- ✅ Strategy optimization with walk-forward analysis
+- ⏳ Real-time performance dashboard
+- ⏳ Advanced portfolio analytics
+
+### 🔄 Phase 3: User Interface (NEXT PRIORITY)
+- ⏳ React frontend dashboard
+- ⏳ Telegram bot for notifications
+- ⏳ GraphQL API endpoint
+- ⏳ Mobile-responsive design
+- ⏳ Real-time WebSocket updates
+
+### 📅 Phase 4: Scale & Optimize (PLANNED)
+- [ ] Multi-exchange support (Binance, OKX)
+- [ ] Kubernetes deployment
+- [ ] Multi-region deployment
+- [ ] Cross-exchange arbitrage
+- [ ] Microservices architecture
+
+### 🔬 Phase 5: Advanced AI (FUTURE)
+- [ ] Sentiment analysis (Twitter, Reddit, News)
+- [ ] Reinforcement learning bot
+- [ ] Options strategies
+- [ ] High-frequency trading
 
 ## 🛠 Technology Stack
 
+### Core Technologies
 - **Language**: Python 3.11
-- **Exchange API**: Bybit API v5
+- **Exchange API**: Bybit API v5 with WebSocket
 - **Database**: PostgreSQL + Redis
 - **Deployment**: Fly.io (Global Edge Network)
 - **CI/CD**: GitHub Actions
 - **Monitoring**: Prometheus + Grafana
 - **Container**: Docker
 - **Region**: Singapore (Low latency to Bybit)
+
+### New Components (Phase 1-2)
+- **WebSocket Manager**: Real-time data streaming
+- **Data Normalizer**: Unified data processing
+- **Order Manager**: Smart order routing
+- **Risk Manager V2**: Advanced risk controls
+- **ML Framework**: TensorFlow, XGBoost, scikit-learn
+- **Backtesting Engine**: Historical simulation
 
 ## 📊 Trading Strategies
 
@@ -63,13 +116,20 @@ Automated cryptocurrency trading bot for Bybit exchange with advanced strategies
 - **Grid Strategy**: Automated grid trading
 - **Combined Strategy**: Multi-indicator approach
 
-### Advanced Strategies (2022-2025 Market Analysis)
+### Advanced Strategies
 - **Adaptive Strategy** ⭐: Auto-adjusts to market conditions
 - **Kaufman Strategy**: Adaptive moving average with efficiency ratio
 - **DCA Strategy**: Dollar-cost averaging for accumulation
 - **Whale Following**: Track and follow large traders
 - **Crash Detection**: Avoid market crashes like Terra/FTX
 - **ETF Momentum**: Trade on ETF inflows
+
+### Machine Learning Strategies (NEW)
+- **LSTM Neural Network**: Time series prediction
+- **Random Forest**: Feature-based classification
+- **XGBoost**: Gradient boosting predictions
+- **Ensemble Model**: Combined ML predictions
+- **Feature Engineering**: 100+ technical indicators
 
 ## 🚀 Quick Start
 
@@ -108,15 +168,26 @@ cp .env.example .env
 # Edit .env with your API keys
 ```
 
-4. Start Docker services:
+4. Run the integrated bot (NEW):
 ```bash
-make dev
+# Paper trading (safest - no real orders)
+python main.py --mode integrated --paper --symbols BTCUSDT
+
+# Testnet trading
+python main.py --mode integrated --symbols BTCUSDT ETHUSDT
+
+# With ML strategies
+python main.py --mode integrated --paper --ml --symbols BTCUSDT
+
+# Legacy mode (old bot)
+python main.py --mode legacy --strategy adaptive
 ```
 
-5. Run the bot:
+5. Using Docker:
 ```bash
-make run-testnet  # For testnet
-make run          # For production
+make dev          # Start Docker services
+make run-testnet  # Run in testnet
+make run          # Run in production
 ```
 
 ## 📈 Performance Metrics
