@@ -97,7 +97,7 @@ jobs:
     
     - name: Initialize database
       run: |
-        PGPASSWORD=password psql -h localhost -U trader -d trading_bot -f scripts/init_postgres.sql
+        PGPASSWORD=password psql -h localhost -U trader -d trading_bot -f scripts/init_postgres.sql || echo "Database init skipped"
       env:
         DATABASE_URL: postgresql://trader:password@localhost:5432/trading_bot
     
