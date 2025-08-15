@@ -19,6 +19,8 @@ import xgboost as xgb
 import warnings
 warnings.filterwarnings('ignore')
 
+logger = logging.getLogger(__name__)
+
 # TensorFlow imports
 try:
     import tensorflow as tf
@@ -31,8 +33,6 @@ try:
 except ImportError:
     TF_AVAILABLE = False
     logger.warning("TensorFlow not available. LSTM models will be disabled.")
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass

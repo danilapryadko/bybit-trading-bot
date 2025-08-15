@@ -67,22 +67,28 @@ class BotSystem:
         )
         
         # Initialize Risk Manager
-        risk_manager = RiskManagerV2(
+        from risk_manager_v2 import RiskProfile
+        risk_profile = RiskProfile(
             max_position_size=float(os.getenv('MAX_POSITION_SIZE', '10000')),
-            max_portfolio_risk=float(os.getenv('MAX_PORTFOLIO_RISK', '0.1')),
-            max_correlation=float(os.getenv('MAX_CORRELATION', '0.7'))
+            max_daily_loss=float(os.getenv('MAX_DAILY_LOSS', '500')),
+            risk_per_trade=float(os.getenv('RISK_PER_TRADE', '1.0')) / 100
+        )
+        risk_manager = RiskManagerV2(
+            account_balance=float(os.getenv('INITIAL_CAPITAL', '10000')),
+            risk_profile=risk_profile
         )
         
         # Initialize Trading Bot
-        self.trading_bot = TradingBot(
-            api_key=api_key,
-            api_secret=api_secret,
+        from trading_bot import TradingConfig
+        trading_config = TradingConfig(
             testnet=testnet,
             paper_trading=os.getenv('PAPER_TRADING', 'true').lower() == 'true',
-            initial_capital=float(os.getenv('INITIAL_CAPITAL', '10000')),
-            risk_per_trade=float(os.getenv('RISK_PER_TRADE', '1.0')),
-            max_positions=int(os.getenv('MAX_POSITIONS', '3'))
+            initial_balance=float(os.getenv('INITIAL_CAPITAL', '10000')),
+            risk_per_trade=float(os.getenv('RISK_PER_TRADE', '1.0')) / 100,
+            max_positions=int(os.getenv('MAX_POSITIONS', '3')),
+            max_daily_loss=float(os.getenv('MAX_DAILY_LOSS', '500'))
         )
+        self.trading_bot = TradingBot(config=trading_config)
         
         # Initialize Telegram Bot
         telegram_token = os.getenv('TELEGRAM_BOT_TOKEN')

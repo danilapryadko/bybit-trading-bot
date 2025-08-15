@@ -23,7 +23,7 @@ from telegram.constants import ParseMode
 
 from trading_bot import TradingBot
 from risk_manager_v2 import RiskManagerV2
-from backtesting_engine import BacktestEngine
+from backtesting_engine import BacktestingEngine
 
 logger = logging.getLogger(__name__)
 
