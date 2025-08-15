@@ -1,0 +1,90 @@
+name: Daily Performance Report
+
+on:
+  schedule:
+    # Run at 00:00 UTC every day
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  performance-report:
+    name: Generate Daily Report
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Fetch Bot Metrics
+      id: metrics
+      run: |
+        # Get metrics from production
+        METRICS=$(curl -s https://bybit-trading-bot.fly.dev/metrics)
+        STATUS=$(curl -s https://bybit-trading-bot.fly.dev/status)
+        
+        # Parse important metrics
+        echo "$STATUS" | jq '.' > status.json
+        
+        # Extract key values
+        BALANCE=$(echo "$STATUS" | jq -r '.trading.balance')
+        DAILY_PNL=$(echo "$STATUS" | jq -r '.trading.daily_pnl')
+        POSITIONS=$(echo "$STATUS" | jq -r '.trading.positions')
+        UPTIME=$(echo "$STATUS" | jq -r '.uptime.human_readable')
+        
+        echo "balance=$BALANCE" >> $GITHUB_OUTPUT
+        echo "daily_pnl=$DAILY_PNL" >> $GITHUB_OUTPUT
+        echo "positions=$POSITIONS" >> $GITHUB_OUTPUT
+        echo "uptime=$UPTIME" >> $GITHUB_OUTPUT
+    
+    - name: Generate Report
+      run: |
+        cat << EOF > daily_report.md
+        # 📊 Daily Trading Bot Report
+        
+        **Date:** $(date +%Y-%m-%d)
+        
+        ## 💰 Financial Summary
+        - **Balance:** \$${BALANCE}
+        - **Daily P&L:** \$${DAILY_PNL}
+        - **Open Positions:** ${POSITIONS}
+        
+        ## 🤖 System Health
+        - **Uptime:** ${UPTIME}
+        - **Status:** Running
+        
+        ## 📈 Performance Metrics
+        - View detailed metrics at: https://bybit-trading-bot.fly.dev/metrics
+        - Live status: https://bybit-trading-bot.fly.dev/status
+        
+        ---
+        *Generated automatically by GitHub Actions*
+        EOF
+      env:
+        BALANCE: ${{ steps.metrics.outputs.balance }}
+        DAILY_PNL: ${{ steps.metrics.outputs.daily_pnl }}
+        POSITIONS: ${{ steps.metrics.outputs.positions }}
+        UPTIME: ${{ steps.metrics.outputs.uptime }}
+    
+    - name: Upload Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: daily-report-$(date +%Y%m%d)
+        path: daily_report.md
+    
+    - name: Send Report to Telegram
+      if: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      run: |
+        MESSAGE="📊 *Daily Trading Bot Report*
+        
+        💰 Balance: \$${{ steps.metrics.outputs.balance }}
+        📈 Daily P&L: \$${{ steps.metrics.outputs.daily_pnl }}
+        📍 Open Positions: ${{ steps.metrics.outputs.positions }}
+        ⏱ Uptime: ${{ steps.metrics.outputs.uptime }}
+        
+        [View Full Status](https://bybit-trading-bot.fly.dev/status)"
+        
+        curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d "text=${MESSAGE}" \
+          -d "parse_mode=Markdown" \
+          -d "disable_web_page_preview=true"
+      continue-on-error: true

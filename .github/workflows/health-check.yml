@@ -1,0 +1,56 @@
+name: Bot Health Monitor
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: Check Bot Health
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check Production Health
+      id: prod_health
+      run: |
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://bybit-trading-bot.fly.dev/health)
+        echo "response_code=$RESPONSE" >> $GITHUB_OUTPUT
+        if [ $RESPONSE -ne 200 ]; then
+          echo "❌ Production bot is unhealthy! Response code: $RESPONSE"
+          exit 1
+        else
+          echo "✅ Production bot is healthy"
+        fi
+      continue-on-error: true
+    
+    - name: Check Production Status
+      if: success()
+      run: |
+        curl -s https://bybit-trading-bot.fly.dev/status | jq '.'
+    
+    - name: Restart if Unhealthy
+      if: failure()
+      run: |
+        echo "Attempting to restart the bot..."
+        flyctl restart --app bybit-trading-bot
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    
+    - name: Send Alert if Failed
+      if: failure()
+      run: |
+        MESSAGE="🚨 *ALERT: Trading Bot Unhealthy*
+        
+        Time: $(date)
+        Environment: Production
+        Action: Automatic restart initiated
+        
+        Check logs: fly logs --app bybit-trading-bot"
+        
+        curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d "text=${MESSAGE}" \
+          -d "parse_mode=Markdown"
+      continue-on-error: true

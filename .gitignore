@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Project specific
+*.log
+data/historical/*
+data/backtest_results/*
+!data/historical/.gitkeep
+!data/backtest_results/.gitkeep
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Secrets
+*.pem
+*.key
+secrets/
+config/production.yml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS files
+Thumbs.db
+Desktop.ini
