@@ -1,0 +1,49 @@
+{
+  "short_name": "Bybit Bot",
+  "name": "Bybit Trading Bot Dashboard",
+  "description": "Professional cryptocurrency trading bot for Bybit exchange",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1976d2",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["finance", "business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Trading",
+      "short_name": "Trade",
+      "description": "Open trading interface",
+      "url": "/trading",
+      "icons": [{ "src": "/icons/trade.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Analytics",
+      "short_name": "Stats",
+      "description": "View performance analytics",
+      "url": "/analytics",
+      "icons": [{ "src": "/icons/analytics.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
+}

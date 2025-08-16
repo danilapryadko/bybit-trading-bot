@@ -193,7 +193,7 @@ class DatabaseService:
                 pnl_percent=trade_data.get('pnl_percent', 0),
                 fees=trade_data.get('fees', 0),
                 is_paper=trade_data.get('is_paper', True),
-                metadata=trade_data.get('metadata', {})
+                meta_data=trade_data.get('metadata', {})
             )
             session.add(trade)
             session.flush()
@@ -300,7 +300,7 @@ class DatabaseService:
                 quantity=order_data['quantity'],
                 time_in_force=order_data.get('time_in_force', 'GTC'),
                 reduce_only=order_data.get('reduce_only', False),
-                metadata=order_data.get('metadata', {})
+                meta_data=order_data.get('metadata', {})
             )
             session.add(order)
             session.flush()
@@ -359,7 +359,7 @@ class DatabaseService:
                 signal_type=signal_data['type'],
                 strength=signal_data['strength'],
                 price=signal_data['price'],
-                metadata=signal_data.get('metadata', {})
+                meta_data=signal_data.get('metadata', {})
             )
             session.add(signal)
             session.flush()
@@ -384,8 +384,10 @@ class DatabaseService:
     
     # Alerts
     def create_alert(self, user_id: int, type: str, severity: str, 
-                    title: str, message: str, metadata: Optional[Dict] = None) -> Alert:
+                    title: str, message: str, metadata: Optional[Dict] = None, meta_data: Optional[Dict] = None) -> Alert:
         """Create user alert"""
+        # Support both metadata and meta_data parameter names
+        data = meta_data or metadata or {}
         with self.get_session() as session:
             alert = Alert(
                 user_id=user_id,
@@ -393,7 +395,7 @@ class DatabaseService:
                 severity=severity,
                 title=title,
                 message=message,
-                metadata=metadata or {}
+                meta_data=data
             )
             session.add(alert)
             session.flush()
@@ -416,14 +418,16 @@ class DatabaseService:
     
     # System Logging
     def log_system_event(self, level: str, component: str, message: str, 
-                        metadata: Optional[Dict] = None) -> SystemLog:
+                        metadata: Optional[Dict] = None, meta_data: Optional[Dict] = None) -> SystemLog:
         """Log system event"""
+        # Support both metadata and meta_data parameter names
+        data = meta_data or metadata or {}
         with self.get_session() as session:
             log = SystemLog(
                 level=level,
                 component=component,
                 message=message,
-                metadata=metadata or {}
+                meta_data=data
             )
             session.add(log)
             session.flush()

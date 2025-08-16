@@ -1,0 +1,38 @@
+# Telegram Bot Microservice
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    make \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy shared code and bot code
+COPY ../../requirements.txt .
+COPY ../../telegram_bot.py .
+COPY ../../trading_bot.py .
+COPY ../../bybit_connector.py .
+COPY ../../config.py .
+COPY ../../strategies.py .
+COPY ../../database ./database
+COPY ../../security ./security
+COPY main.py .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1
+ENV SERVICE_TYPE=telegram-bot
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import sys; sys.exit(0)"
+
+# Run Telegram bot
+CMD ["python", "main.py"]

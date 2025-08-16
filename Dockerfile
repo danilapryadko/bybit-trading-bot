@@ -1,14 +1,4 @@
-# Multi-stage build for Python backend and React frontend
-FROM node:18-alpine AS frontend-build
-
-# Build React frontend
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build
-
-# Python backend with Telegram bot
+# Python backend with Telegram bot and GraphQL API
 FROM python:3.11-slim
 
 # Install system dependencies
@@ -30,9 +20,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Copy built frontend from previous stage
-COPY --from=frontend-build /app/frontend/dist ./frontend/dist
-
 # Create volume for logs and data
 VOLUME ["/app/data", "/app/logs"]
 
@@ -48,5 +35,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose ports
 EXPOSE 8000 8080
 
-# Run the simplified Telegram bot
-CMD ["python", "start_telegram_bot.py"]
+# Run only GraphQL API server with REAL Bybit connection (no Telegram bot conflicts)
+CMD ["python", "start_api_only.py"]

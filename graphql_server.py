@@ -450,12 +450,28 @@ schema = make_executable_schema(type_defs, query, mutation, subscription)
 
 # Create Starlette app
 def create_app(bot: Optional[TradingBot] = None):
-    """Create GraphQL server app"""
-    app = Starlette()
+    """Create GraphQL server app with rate limiting"""
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware as FastAPICORS
+    from middleware.rate_limiter import RateLimitMiddleware
+    import os
+    
+    # Create FastAPI app instead of Starlette for better middleware support
+    app = FastAPI(title="Bybit Trading Bot API")
+    
+    # Add Rate Limiting middleware
+    app.add_middleware(
+        RateLimitMiddleware,
+        requests_per_minute=60,
+        requests_per_hour=1000,
+        requests_per_day=10000,
+        exclude_paths=['/health', '/metrics'],
+        redis_url=os.getenv('REDIS_URL')  # Optional Redis for distributed rate limiting
+    )
     
     # Add CORS middleware
     app.add_middleware(
-        CORSMiddleware,
+        FastAPICORS,
         allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
@@ -467,12 +483,29 @@ def create_app(bot: Optional[TradingBot] = None):
         from start_telegram_bot import MockTradingBot
         bot = MockTradingBot()
     
-    # Add GraphQL route
-    app.mount("/graphql", GraphQL(
+    # Add GraphQL route using FastAPI
+    from ariadne.asgi import GraphQL as AriadneGraphQL
+    graphql_app = AriadneGraphQL(
         schema,
         context_value={"bot": bot},
         debug=True
-    ))
+    )
+    app.mount("/graphql", graphql_app)
+    
+    # Add health check endpoint
+    @app.get("/health")
+    async def health_check():
+        return {"status": "healthy", "service": "bybit-trading-bot"}
+    
+    # Add metrics endpoint for monitoring
+    @app.get("/metrics")
+    async def metrics():
+        from middleware.rate_limiter import get_rate_limiter
+        rate_limiter = get_rate_limiter()
+        return {
+            "rate_limit_stats": rate_limiter.get_stats(),
+            "timestamp": datetime.now().isoformat()
+        }
     
     return app
 

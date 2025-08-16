@@ -1,0 +1,268 @@
+{
+  "dashboard": {
+    "title": "Bybit Trading Bot Dashboard",
+    "tags": ["trading", "crypto", "monitoring"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Account Balance",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "trading_bot_account_balance",
+            "legendFormat": "Balance (USD)"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Total Profit/Loss",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_profit_total",
+            "legendFormat": "P&L"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Win Rate",
+        "type": "gauge",
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_win_rate",
+            "legendFormat": "Win Rate %"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Open Positions",
+        "type": "bargauge",
+        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_open_positions",
+            "legendFormat": "{{symbol}}"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Trades Executed",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(trading_bot_trades_total[5m])",
+            "legendFormat": "{{symbol}} - {{side}}"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "ML Model Accuracy",
+        "type": "bargauge",
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_ml_accuracy",
+            "legendFormat": "{{model}}"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Risk Score",
+        "type": "gauge",
+        "gridPos": {"x": 12, "y": 12, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_risk_score",
+            "legendFormat": "Risk"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 80, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Max Drawdown",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 12, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_max_drawdown_percent",
+            "legendFormat": "Drawdown %"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "API Request Performance",
+        "type": "heatmap",
+        "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "trading_bot_api_request_duration_seconds",
+            "legendFormat": "{{endpoint}}"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "API Errors",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(trading_bot_api_errors_total[5m])",
+            "legendFormat": "{{endpoint}} - {{error_type}}"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "System Resources",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "trading_bot_cpu_usage_percent",
+            "legendFormat": "CPU %"
+          },
+          {
+            "expr": "trading_bot_memory_usage_bytes / 1024 / 1024",
+            "legendFormat": "Memory (MB)"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Connections",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 24, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_websocket_connections",
+            "legendFormat": "WebSocket"
+          },
+          {
+            "expr": "trading_bot_database_connections",
+            "legendFormat": "Database"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Alerts Sent",
+        "type": "graph",
+        "gridPos": {"x": 18, "y": 24, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "rate(trading_bot_alerts_sent_total[5m])",
+            "legendFormat": "{{type}} - {{severity}}"
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Strategy Performance",
+        "type": "table",
+        "gridPos": {"x": 12, "y": 28, "w": 12, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_strategy_performance",
+            "format": "table",
+            "instant": true
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Trade Execution Time",
+        "type": "histogram",
+        "gridPos": {"x": 0, "y": 32, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, trading_bot_trade_execution_seconds_bucket)",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.99, trading_bot_trade_execution_seconds_bucket)",
+            "legendFormat": "99th percentile"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Position Sizes",
+        "type": "bargauge",
+        "gridPos": {"x": 12, "y": 32, "w": 12, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_position_size_usd",
+            "legendFormat": "{{symbol}}"
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "Leverage Used",
+        "type": "bargauge",
+        "gridPos": {"x": 12, "y": 36, "w": 12, "h": 4},
+        "targets": [
+          {
+            "expr": "trading_bot_leverage",
+            "legendFormat": "{{symbol}}"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "Market Data Updates",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 40, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "rate(trading_bot_market_data_updates_total[1m])",
+            "legendFormat": "{{symbol}} - {{timeframe}}"
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "title": "Orderbook Spread",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 40, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "trading_bot_orderbook_spread",
+            "legendFormat": "{{symbol}}"
+          }
+        ]
+      }
+    ],
+    "refresh": "5s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "uid": "bybit-trading-bot",
+    "version": 1
+  }
+}

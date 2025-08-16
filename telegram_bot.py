@@ -21,9 +21,9 @@ from telegram.ext import (
 )
 from telegram.constants import ParseMode
 
-from trading_bot import TradingBot
-from risk_manager_v2 import RiskManagerV2
-from backtesting_engine import BacktestingEngine
+# from trading_bot import TradingBot  # Not needed, we'll use the bot passed in
+# from risk_manager_v2 import RiskManagerV2
+# from backtesting_engine import BacktestingEngine
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class UserSession:
     chat_id: int
     is_authenticated: bool = False
     last_activity: datetime = None
-    trading_bot: Optional[TradingBot] = None
+    trading_bot: Optional[Any] = None
     
 
 class TelegramBot:
@@ -45,7 +45,7 @@ class TelegramBot:
         self,
         token: str,
         allowed_users: List[int] = None,
-        trading_bot: Optional[TradingBot] = None
+        trading_bot: Optional[Any] = None
     ):
         self.token = token
         self.allowed_users = allowed_users or []
@@ -327,9 +327,9 @@ class TelegramBot:
             "/status - Check bot status\n"
             "/balance - Show account balance\n"
             "/positions - List open positions\n"
+            "/open [symbol] [side] [amount] - Open position\n"
             "/close [symbol] - Close position\n"
-            "/buy [symbol] [amount] - Place buy order\n"
-            "/sell [symbol] [amount] - Place sell order\n"
+            "/report [daily|weekly|monthly] - Get trading report\n"
             "/stop - Stop the bot\n\n"
             "*Keyboard Shortcuts:*\n"
             "Use the inline buttons to navigate\n"
@@ -460,6 +460,214 @@ class TelegramBot:
         else:
             await query.edit_message_text("❌ Bot not initialized")
             
+    async def open_position_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /open command - Open a new position"""
+        user_id = update.effective_user.id
+        
+        # Check authorization
+        if self.allowed_users and user_id not in self.allowed_users:
+            await update.message.reply_text("⛔ Unauthorized access")
+            return
+            
+        # Parse arguments: /open BTCUSDT long 0.001
+        args = context.args
+        if len(args) < 3:
+            await update.message.reply_text(
+                "❌ Invalid format\n"
+                "Usage: `/open [symbol] [side] [amount]`\n"
+                "Example: `/open BTCUSDT long 0.001`",
+                parse_mode=ParseMode.MARKDOWN
+            )
+            return
+            
+        symbol = args[0].upper()
+        side = args[1].lower()
+        try:
+            amount = float(args[2])
+        except ValueError:
+            await update.message.reply_text("❌ Invalid amount")
+            return
+            
+        if side not in ['long', 'buy', 'short', 'sell']:
+            await update.message.reply_text("❌ Side must be 'long' or 'short'")
+            return
+            
+        # Convert to standard side format
+        side = 'Buy' if side in ['long', 'buy'] else 'Sell'
+        
+        if not self.trading_bot:
+            await update.message.reply_text("❌ Trading bot not initialized")
+            return
+            
+        try:
+            # Place order through trading bot
+            order = self.trading_bot.place_order(
+                symbol=symbol,
+                side=side,
+                qty=amount,
+                order_type='Market'
+            )
+            
+            await update.message.reply_text(
+                f"✅ *Position Opened*\n"
+                f"━━━━━━━━━━━━━━━━━\n"
+                f"Symbol: {symbol}\n"
+                f"Side: {side}\n"
+                f"Amount: {amount}\n"
+                f"Order ID: {order.get('orderId', 'N/A')}\n"
+                f"Status: {order.get('orderStatus', 'N/A')}",
+                parse_mode=ParseMode.MARKDOWN
+            )
+        except Exception as e:
+            await update.message.reply_text(f"❌ Failed to open position: {str(e)}")
+            
+    async def close_position_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /close command - Close a position"""
+        user_id = update.effective_user.id
+        
+        # Check authorization
+        if self.allowed_users and user_id not in self.allowed_users:
+            await update.message.reply_text("⛔ Unauthorized access")
+            return
+            
+        # Parse arguments: /close BTCUSDT
+        args = context.args
+        if len(args) < 1:
+            await update.message.reply_text(
+                "❌ Invalid format\n"
+                "Usage: `/close [symbol]`\n"
+                "Example: `/close BTCUSDT`",
+                parse_mode=ParseMode.MARKDOWN
+            )
+            return
+            
+        symbol = args[0].upper()
+        
+        if not self.trading_bot:
+            await update.message.reply_text("❌ Trading bot not initialized")
+            return
+            
+        try:
+            # Get position for symbol
+            positions = self.trading_bot.get_positions()
+            position = next((p for p in positions if p['symbol'] == symbol), None)
+            
+            if not position:
+                await update.message.reply_text(f"❌ No open position for {symbol}")
+                return
+                
+            # Close the position
+            result = self.trading_bot.close_position(symbol)
+            
+            await update.message.reply_text(
+                f"✅ *Position Closed*\n"
+                f"━━━━━━━━━━━━━━━━━\n"
+                f"Symbol: {symbol}\n"
+                f"Side: {position['side']}\n"
+                f"Size: {position['size']}\n"
+                f"P&L: ${position.get('unrealizedPnl', 0):+,.2f}",
+                parse_mode=ParseMode.MARKDOWN
+            )
+        except Exception as e:
+            await update.message.reply_text(f"❌ Failed to close position: {str(e)}")
+            
+    async def report_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /report command - Generate trading report"""
+        user_id = update.effective_user.id
+        
+        # Check authorization
+        if self.allowed_users and user_id not in self.allowed_users:
+            await update.message.reply_text("⛔ Unauthorized access")
+            return
+            
+        # Parse arguments: /report daily|weekly|monthly
+        args = context.args
+        period = args[0].lower() if args else 'daily'
+        
+        if period not in ['daily', 'weekly', 'monthly']:
+            await update.message.reply_text(
+                "❌ Invalid period\n"
+                "Usage: `/report [daily|weekly|monthly]`",
+                parse_mode=ParseMode.MARKDOWN
+            )
+            return
+            
+        if not self.trading_bot:
+            await update.message.reply_text("❌ Trading bot not initialized")
+            return
+            
+        try:
+            # Calculate date range
+            from datetime import datetime, timedelta
+            end_date = datetime.now()
+            
+            if period == 'daily':
+                start_date = end_date - timedelta(days=1)
+            elif period == 'weekly':
+                start_date = end_date - timedelta(days=7)
+            else:  # monthly
+                start_date = end_date - timedelta(days=30)
+                
+            # Get trades for period
+            trades = self.trading_bot.get_trades(start_date, end_date)
+            positions = self.trading_bot.get_positions()
+            balance = self.trading_bot.get_balance()
+            
+            # Calculate statistics
+            total_trades = len(trades)
+            winning_trades = sum(1 for t in trades if t.get('pnl', 0) > 0)
+            losing_trades = sum(1 for t in trades if t.get('pnl', 0) <= 0)
+            win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0
+            
+            total_pnl = sum(t.get('pnl', 0) for t in trades)
+            avg_pnl = total_pnl / total_trades if total_trades > 0 else 0
+            best_trade = max(trades, key=lambda t: t.get('pnl', 0)) if trades else None
+            worst_trade = min(trades, key=lambda t: t.get('pnl', 0)) if trades else None
+            
+            # Format report
+            report_text = (
+                f"📊 *{period.capitalize()} Trading Report*\n"
+                f"━━━━━━━━━━━━━━━━━━━━\n"
+                f"Period: {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}\n\n"
+                f"*Account Summary*\n"
+                f"💰 Balance: ${balance:,.2f}\n"
+                f"📈 Open Positions: {len(positions)}\n\n"
+                f"*Trading Statistics*\n"
+                f"📊 Total Trades: {total_trades}\n"
+                f"✅ Winning: {winning_trades}\n"
+                f"❌ Losing: {losing_trades}\n"
+                f"📈 Win Rate: {win_rate:.1f}%\n\n"
+                f"*P&L Summary*\n"
+                f"💵 Total P&L: ${total_pnl:+,.2f}\n"
+                f"📊 Average P&L: ${avg_pnl:+,.2f}\n"
+            )
+            
+            if best_trade:
+                report_text += f"🎯 Best Trade: ${best_trade.get('pnl', 0):+,.2f}\n"
+            if worst_trade:
+                report_text += f"📉 Worst Trade: ${worst_trade.get('pnl', 0):+,.2f}\n"
+                
+            # Add top pairs if available
+            if trades:
+                from collections import Counter
+                pair_pnl = {}
+                for trade in trades:
+                    symbol = trade.get('symbol', 'Unknown')
+                    if symbol not in pair_pnl:
+                        pair_pnl[symbol] = 0
+                    pair_pnl[symbol] += trade.get('pnl', 0)
+                    
+                top_pairs = sorted(pair_pnl.items(), key=lambda x: x[1], reverse=True)[:3]
+                if top_pairs:
+                    report_text += "\n*Top Performing Pairs*\n"
+                    for symbol, pnl in top_pairs:
+                        report_text += f"• {symbol}: ${pnl:+,.2f}\n"
+                        
+            await update.message.reply_text(report_text, parse_mode=ParseMode.MARKDOWN)
+            
+        except Exception as e:
+            await update.message.reply_text(f"❌ Failed to generate report: {str(e)}")
+            
     async def send_notification(
         self,
         chat_id: int,
@@ -513,6 +721,9 @@ class TelegramBot:
         
         # Add command handlers
         self.app.add_handler(CommandHandler("start", self.start))
+        self.app.add_handler(CommandHandler("open", self.open_position_command))
+        self.app.add_handler(CommandHandler("close", self.close_position_command))
+        self.app.add_handler(CommandHandler("report", self.report_command))
         self.app.add_handler(CallbackQueryHandler(self.button_handler))
         
         # Add error handler

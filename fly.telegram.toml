@@ -1,0 +1,40 @@
+# Telegram Bot Microservice Configuration
+app = "bybit-danila-bot"
+primary_region = "sin"
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[build]
+  dockerfile = "Dockerfile.telegram"
+
+[env]
+  ENVIRONMENT = "production"
+  SERVICE_TYPE = "telegram-bot"
+  USE_MAINNET = "false"
+
+# No HTTP service for Telegram Bot
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+  
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+  
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+  
+  [[services.http_checks]]
+    interval = 30000
+    grace_period = "10s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+    timeout = 5000
+
+# Machine configuration
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512

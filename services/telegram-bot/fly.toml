@@ -1,0 +1,28 @@
+# Telegram Bot Microservice Configuration
+app = "bybit-danila-bot"
+primary_region = "sin"
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[build]
+  dockerfile = "Dockerfile"
+  build_target = "production"
+
+[env]
+  ENVIRONMENT = "production"
+  SERVICE_TYPE = "telegram-bot"
+  USE_MAINNET = "false"
+
+# No exposed ports needed for Telegram bot
+# It connects to Telegram servers, doesn't listen for connections
+
+# Persistent storage for logs
+[mounts]
+  source = "bot_data"
+  destination = "/data"
+
+# Machine configuration
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256

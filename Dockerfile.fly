@@ -21,6 +21,9 @@ RUN pip install --no-cache-dir -r requirements-light.txt
 COPY *.py ./
 COPY .env.example .env
 
+# Copy database package
+COPY database/ ./database/
+
 # Create directories for logs and data
 RUN mkdir -p /app/logs /app/data
 

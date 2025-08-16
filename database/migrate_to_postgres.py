@@ -315,7 +315,7 @@ class DataMigration:
                 severity='info',
                 title='Database Migration Complete',
                 message='Your data has been successfully migrated to PostgreSQL',
-                metadata={'migration_date': datetime.now(timezone.utc).isoformat()}
+                meta_data={'migration_date': datetime.now(timezone.utc).isoformat()}
             )
             logger.info("Created welcome alert")
         except Exception as e:
@@ -353,7 +353,7 @@ class DataMigration:
                 level='info',
                 component='migration',
                 message='Database migration completed successfully',
-                metadata={
+                meta_data={
                     'migration_date': datetime.now(timezone.utc).isoformat(),
                     'version': '2.0.0'
                 }

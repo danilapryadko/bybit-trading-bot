@@ -18,15 +18,17 @@ logger = logging.getLogger(__name__)
 
 
 # Simplified bot for testing
-class MockTradingBot:
+from bybit_connector import get_bybit_connector
+
+class MockTradingBot:  # Actually REAL now!
     def __init__(self):
         self.is_running = False
-        self.paper_trading = True
+        self.paper_trading = False  # REAL trading
         self.strategy_name = "ML Ensemble"
         self.start_time = None
         
     def get_balance(self):
-        return 10000.0
+        return get_bybit_connector().get_balance()  # REAL balance
         
     def get_positions(self):
         return []

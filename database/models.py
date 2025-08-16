@@ -124,7 +124,7 @@ class Trade(Base):
     pnl_percent = Column(Float, default=0)
     fees = Column(Float, default=0)
     is_paper = Column(Boolean, default=True)
-    metadata = Column(JSON, default={})  # Additional trade data
+    meta_data = Column(JSON, default={})  # Additional trade data
     
     # Relationships
     user = relationship("User", back_populates="trades")
@@ -189,7 +189,7 @@ class Order(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     filled_at = Column(DateTime(timezone=True), nullable=True)
     cancelled_at = Column(DateTime(timezone=True), nullable=True)
-    metadata = Column(JSON, default={})
+    meta_data = Column(JSON, default={})
     
     # Relationships
     user = relationship("User", back_populates="orders")
@@ -228,7 +228,7 @@ class Signal(Base):
     signal_type = Column(String(20), nullable=False)  # 'buy', 'sell', 'hold'
     strength = Column(Float, nullable=False)  # 0-1 confidence score
     price = Column(Float, nullable=False)
-    metadata = Column(JSON, default={})  # Indicators, reasons, etc.
+    meta_data = Column(JSON, default={})  # Indicators, reasons, etc.
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     executed = Column(Boolean, default=False)
     executed_at = Column(DateTime(timezone=True), nullable=True)
@@ -247,7 +247,7 @@ class Alert(Base):
     severity = Column(String(20), nullable=False)  # 'info', 'warning', 'error', 'critical'
     title = Column(String(200), nullable=False)
     message = Column(Text, nullable=False)
-    metadata = Column(JSON, default={})
+    meta_data = Column(JSON, default={})
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     read_at = Column(DateTime(timezone=True), nullable=True)
@@ -267,7 +267,7 @@ class SystemLog(Base):
     level = Column(String(20), nullable=False, index=True)  # 'debug', 'info', 'warning', 'error'
     component = Column(String(50), nullable=False, index=True)  # 'trader', 'risk_manager', 'data_service'
     message = Column(Text, nullable=False)
-    metadata = Column(JSON, default={})
+    meta_data = Column(JSON, default={})
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     
     # Index for log queries
@@ -292,7 +292,7 @@ class Performance(Base):
     sharpe_ratio = Column(Float, nullable=True)
     sortino_ratio = Column(Float, nullable=True)
     max_drawdown = Column(Float, nullable=True)
-    metadata = Column(JSON, default={})
+    meta_data = Column(JSON, default={})
     
     # Unique constraint for one record per user per day
     __table_args__ = (

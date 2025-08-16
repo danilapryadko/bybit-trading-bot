@@ -5,16 +5,15 @@ kill_signal = "SIGINT"
 kill_timeout = 5
 
 [build]
-  dockerfile = "Dockerfile.fly"
+  dockerfile = "Dockerfile"
 
 [env]
   ENVIRONMENT = "production"
-  BYBIT_TESTNET = "true"
+  USE_MAINNET = "false"  # Set to "true" for real money trading
   PORT = "8080"
-  PAPER_TRADING = "true"
-  INITIAL_CAPITAL = "10000"
   MAX_POSITIONS = "3"
   RISK_PER_TRADE = "1.0"
+  # Remove PAPER_TRADING and INITIAL_CAPITAL - use real Bybit data
 
 # Основной процесс - торговый бот с Telegram + GraphQL
 [processes]

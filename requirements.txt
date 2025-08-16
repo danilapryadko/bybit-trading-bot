@@ -51,3 +51,20 @@ orjson==3.9.10
 structlog==23.2.0
 rich==13.7.0
 typer==0.9.0
+bcrypt==4.1.2
+cryptography==41.0.7
+
+# Authentication & Security
+PyJWT==2.8.0
+passlib==1.7.4
+
+# Reporting & Export
+matplotlib==3.8.2
+weasyprint==60.2
+jinja2==3.1.2
+openpyxl==3.1.2
+xlsxwriter==3.1.9
+
+# Scheduling
+schedule==1.2.0
+apscheduler==3.10.4
