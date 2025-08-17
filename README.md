@@ -1,337 +1,68 @@
-# 🤖 Bybit Trading Bot
+# Bybit Trading Bot Dashboard 🚀
 
-[![CI/CD Pipeline](https://github.com/danilapryadko/bbBot/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/danilapryadko/bbBot/actions/workflows/ci-cd.yml)
-[![Health Check](https://github.com/danilapryadko/bbBot/actions/workflows/health-check.yml/badge.svg)](https://github.com/danilapryadko/bbBot/actions/workflows/health-check.yml)
-[![Deployed on Fly.io](https://img.shields.io/badge/Deployed%20on-Fly.io-purple)](https://bybit-trading-bot.fly.dev)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Professional cryptocurrency trading bot with real-time dashboard for Bybit exchange.
 
-Automated cryptocurrency trading bot for Bybit exchange with advanced strategies, risk management, and cloud deployment.
+![Dashboard](https://img.shields.io/badge/Status-Live-success)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![React](https://img.shields.io/badge/React-18-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 
-## ⭐ Key Features
+## 🌐 Live Demo
 
-### 🎯 Priority: Reliability & Safety
-- **Paper Trading Mode**: Test strategies without real money
-- **Comprehensive Error Handling**: Auto-recovery and reconnection
-- **Risk Management V2**: Kelly Criterion, VaR, trailing stops
-- **Daily Loss Limits**: Automatic trading halt on max loss
-- **Multi-layer Safety**: Position limits, correlation checks, drawdown protection
+- **Dashboard**: https://bybit-danila-dashboard.fly.dev
+- **API**: https://bybit-danila-api.fly.dev/graphql
 
-### 🤖 Advanced Trading
-- **Real-time WebSocket**: Low-latency market data streaming
-- **Smart Order Routing**: Iceberg orders, order splitting
-- **ML Strategies**: LSTM, Random Forest, XGBoost ensemble
-- **Backtesting Engine**: Historical simulation with Monte Carlo
-- **100+ Indicators**: Complete technical analysis toolkit
+## ✨ Current Features
 
-### 📊 New in v2.0
-- ✅ Full integration of all components
-- ✅ Async architecture for better performance
-- ✅ Machine learning predictions
-- ✅ Advanced risk management
-- ✅ Paper trading mode
-- ✅ Multi-symbol support
+### Real-time Market Data
+- Live cryptocurrency prices (BTC $118,294 | ETH $4,533 | SOL $192)
+- Interactive candlestick charts
+- 24h price changes and volume
+- Real balance: 499 USDT
 
-## 🚀 Live Status
+### Technical Features
+- Auto-reconnection with exponential backoff
+- Self-recovery mechanisms
+- Microservices architecture
+- Real-time updates (prices: 5s, balance: 10s)
 
-- 🟢 **Production**: [bybit-danila-bot.fly.dev](https://bybit-danila-bot.fly.dev) (24/7 Operation)
-- 📊 **Dashboard**: [bybit-danila-dashboard.fly.dev](https://bybit-danila-dashboard.fly.dev) (React UI)
-- 🤖 **Telegram Bot**: [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot)
-- 🔗 **GraphQL API**: [bybit-danila-bot.fly.dev/graphql](https://bybit-danila-bot.fly.dev/graphql)
-- 📊 **Mode**: Paper Trading on Testnet (Safe Mode)
-- 🌏 **Region**: Singapore (Low latency to Bybit)
-- 👤 **User**: @koshkikoshki (ID: 384403397)
+## 🛠️ Tech Stack
 
-## 📋 Project Status
+**Backend**: Python, FastAPI, GraphQL, Bybit API  
+**Frontend**: React, TypeScript, Material-UI, Redux  
+**Charts**: TradingView Lightweight Charts  
+**Deployment**: Fly.io
 
-### ✅ Phase 0: Infrastructure (100% COMPLETED)
-- ✅ Project structure and organization
-- ✅ Docker environment for local development
-- ✅ PostgreSQL database with full schema
-- ✅ GitHub Actions CI/CD pipeline
-- ✅ Fly.io cloud deployment (Singapore region)
-- ✅ Health monitoring and metrics
-- ✅ Automated testing framework
-- ✅ Security scanning with Trivy
-- ✅ Daily performance reports
-- ✅ All base trading strategies implemented
+## 📸 Screenshots
 
-### ✅ Phase 1: Core Trading Services (100% COMPLETED)
-- ✅ WebSocket market data streaming with auto-reconnection
-- ✅ Real-time order management system with smart routing
-- ✅ Advanced risk management V2 (Kelly Criterion, VaR, trailing stops)
-- ✅ Position tracking and P&L calculation
-- ✅ Data normalization pipeline
-- ✅ Order lifecycle management
-
-### ✅ Phase 2: Strategy & Analytics (60% COMPLETED)
-- ✅ Backtesting framework with Monte Carlo simulation
-- ✅ Machine learning strategies (LSTM, Random Forest, XGBoost)
-- ✅ Feature engineering pipeline (100+ indicators)
-- ✅ Strategy optimization with walk-forward analysis
-- ⏳ Real-time performance dashboard
-- ⏳ Advanced portfolio analytics
-
-### ✅ Phase 3: User Interface (95% COMPLETED)
-- ✅ React frontend dashboard with Redux (Deployed)
-- ✅ Telegram bot deployed on Fly.io (24/7)
-- ✅ Real-time WebSocket updates
-- ✅ Mobile-responsive design
-- ✅ GraphQL API endpoint (Live)
-- ✅ WebSocket server for real-time data
-- ⏳ TradingView integration (In progress)
-
-### 📅 Phase 4: Scale & Optimize (PLANNED)
-- [ ] Multi-exchange support (Binance, OKX)
-- [ ] Kubernetes deployment
-- [ ] Multi-region deployment
-- [ ] Cross-exchange arbitrage
-- [ ] Microservices architecture
-
-### 🔬 Phase 5: Advanced AI (FUTURE)
-- [ ] Sentiment analysis (Twitter, Reddit, News)
-- [ ] Reinforcement learning bot
-- [ ] Options strategies
-- [ ] High-frequency trading
-
-## 🛠 Technology Stack
-
-### Core Technologies
-- **Language**: Python 3.11
-- **Exchange API**: Bybit API v5 with WebSocket
-- **Database**: PostgreSQL + Redis
-- **Deployment**: Fly.io (Global Edge Network)
-- **CI/CD**: GitHub Actions
-- **Monitoring**: Prometheus + Grafana
-- **Container**: Docker
-- **Region**: Singapore (Low latency to Bybit)
-
-### New Components (Phase 1-2)
-- **WebSocket Manager**: Real-time data streaming
-- **Data Normalizer**: Unified data processing
-- **Order Manager**: Smart order routing
-- **Risk Manager V2**: Advanced risk controls
-- **ML Framework**: TensorFlow, XGBoost, scikit-learn
-- **Backtesting Engine**: Historical simulation
-
-## 📊 Trading Strategies
-
-### Classic Strategies
-- **RSI Strategy**: Oversold/overbought signals
-- **EMA Strategy**: Moving average crossovers
-- **Grid Strategy**: Automated grid trading
-- **Combined Strategy**: Multi-indicator approach
-
-### Advanced Strategies
-- **Adaptive Strategy** ⭐: Auto-adjusts to market conditions
-- **Kaufman Strategy**: Adaptive moving average with efficiency ratio
-- **DCA Strategy**: Dollar-cost averaging for accumulation
-- **Whale Following**: Track and follow large traders
-- **Crash Detection**: Avoid market crashes like Terra/FTX
-- **ETF Momentum**: Trade on ETF inflows
-
-### Machine Learning Strategies (NEW)
-- **LSTM Neural Network**: Time series prediction
-- **Random Forest**: Feature-based classification
-- **XGBoost**: Gradient boosting predictions
-- **Ensemble Model**: Combined ML predictions
-- **Feature Engineering**: 100+ technical indicators
+Dashboard showing real-time Bitcoin price at $118,294 with live charts and 499 USDT balance.
 
 ## 🚀 Quick Start
 
-### Cloud Deployment (Running 24/7!)
-
-**Telegram Bot Active**: [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot)
-
-The bot is deployed on Fly.io for 24/7 operation:
-
 ```bash
-# View logs
-fly logs --app bybit-danila-bot
-
-# SSH into container  
-fly ssh console --app bybit-danila-bot
-
-# Check status
-fly status --app bybit-danila-bot
-
-# Monitor Telegram bot
-fly apps list | grep bybit-danila-bot
-```
-
-**How to use Telegram Bot**:
-1. Open Telegram: [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot)
-2. Send `/start` to see the main menu
-3. Use buttons for navigation:
-   - 📊 Dashboard - View balance and P&L
-   - 💼 Positions - Manage positions
-   - 🤖 Bot Status - Control the trading bot
-
-### Local Development
-
-1. Clone the repository:
-```bash
+# Clone repository
 git clone https://github.com/danilapryadko/bbBot.git
-cd bbBot
-```
+cd bybit-trading-bot
 
-2. Install dependencies:
-```bash
+# Backend
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
+
+# Frontend
+cd frontend
+npm install
+npm run dev
 ```
-
-3. Set up environment:
-```bash
-cp .env.example .env
-# Edit .env with your API keys
-```
-
-4. Run the integrated bot (NEW):
-```bash
-# Paper trading (safest - no real orders)
-python main.py --mode integrated --paper --symbols BTCUSDT
-
-# Testnet trading
-python main.py --mode integrated --symbols BTCUSDT ETHUSDT
-
-# With ML strategies
-python main.py --mode integrated --paper --ml --symbols BTCUSDT
-
-# Legacy mode (old bot)
-python main.py --mode legacy --strategy adaptive
-```
-
-5. Using Docker:
-```bash
-make dev          # Start Docker services
-make run-testnet  # Run in testnet
-make run          # Run in production
-```
-
-## 📈 Performance Metrics
-
-| Metric | Target | Current Status |
-|--------|--------|----------------|
-| Deployment | ✅ 24/7 | **Active on Fly.io (bybit-danila-bot)** |
-| Telegram Bot | Active | ✅ [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot) |
-| Uptime | > 99.9% | ✅ Running continuously |
-| Latency | < 50ms | ~10ms (Singapore) |
-| Mode | Safe | ✅ Paper Trading |
-| User Auth | Secure | ✅ ID: 384403397 only |
-
-## 🔧 Configuration
-
-Current production configuration:
-- **Mode**: TESTNET (safe testing)
-- **Symbol**: BTCUSDT
-- **Leverage**: 1x (no leverage)
-- **Position Size**: $10 (minimum)
-- **Stop Loss**: 2%
-- **Take Profit**: 3%
-- **Strategy**: Adaptive
-
-## 🛡 Security
-
-- ✅ API keys stored as Fly.io secrets
-- ✅ Automated security scanning
-- ✅ No hardcoded credentials
-- ✅ HTTPS only endpoints
-- ✅ Rate limiting implemented
-
-## 📊 Monitoring
-
-### Automated Monitoring
-- **Health checks**: Every 5 minutes via GitHub Actions
-- **Daily reports**: Automated performance reports
-- **Alerts**: Telegram notifications (optional)
-- **Metrics**: Prometheus format at `/metrics`
-
-### Manual Monitoring
-```bash
-# Real-time logs
-fly logs --app bybit-trading-bot
-
-# Check health
-curl https://bybit-trading-bot.fly.dev/health
-
-# View metrics
-curl https://bybit-trading-bot.fly.dev/metrics
-```
-
-## 🚀 Deployment Pipeline
-
-```mermaid
-graph LR
-    A[Push to GitHub] --> B[GitHub Actions]
-    B --> C[Run Tests]
-    C --> D[Security Scan]
-    D --> E[Build Docker]
-    E --> F[Deploy to Fly.io]
-    F --> G[Health Check]
-    G --> H[Live on Cloud]
-```
-
-## 📝 API Documentation
-
-### Public Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | Welcome page |
-| `/health` | GET | Health check |
-| `/status` | GET | Bot status |
-| `/metrics` | GET | Prometheus metrics |
-
-### Health Check Response
-```json
-{
-  "status": "healthy",
-  "uptime_seconds": 3600,
-  "checks": {
-    "bot": true,
-    "database": true,
-    "api": true
-  }
-}
-```
-
-## 🔄 Development Workflow
-
-1. **Local Development**: Make changes locally
-2. **Test**: Run `make test`
-3. **Commit**: Push to GitHub
-4. **Auto Deploy**: GitHub Actions deploys to Fly.io
-5. **Monitor**: Check logs and metrics
-
-## 📚 Documentation
-
-- [Deployment Guide](DEPLOYMENT_GUIDE.md)
-- [Implementation Plan](DETAILED_IMPLEMENTATION_PLAN.md)
-- [Phase 0 Details](PHASE_0_DETAILED.md)
-- [Market Analysis](MARKET_ANALYSIS_2022_2025.md)
-- [Fly.io Deployment](FLY_IO_DEPLOYMENT.md)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch
-3. Commit changes
-4. Push to branch
-5. Open Pull Request
-
-## 📞 Support
-
-- **Repository**: [GitHub](https://github.com/danilapryadko/bbBot)
-- **Issues**: [GitHub Issues](https://github.com/danilapryadko/bbBot/issues)
-- **Live Bot**: [https://bybit-trading-bot.fly.dev](https://bybit-trading-bot.fly.dev)
-
-## ⚠️ Disclaimer
-
-This bot is for educational purposes. Cryptocurrency trading carries significant risk. Currently running on TESTNET for safety.
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file
+MIT License - see [LICENSE](LICENSE) for details.
+
+## ⚠️ Disclaimer
+
+Educational purposes only. Trade at your own risk.
 
 ---
-
-**📈 Bot Status**: Live 24/7 on Fly.io | **📊 Dashboard**: [bybit-danila-dashboard.fly.dev](https://bybit-danila-dashboard.fly.dev) | **🤖 Telegram**: [@bybit_danila_trading_bot](https://t.me/bybit_danila_trading_bot) | **✅ Phase 3**: 95% Complete
+**Built with Claude Code** 🤖
