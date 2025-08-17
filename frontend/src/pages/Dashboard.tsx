@@ -27,19 +27,26 @@ import {
 import { useAppSelector } from '../store/hooks';
 import { subscribeToChannel } from '../services/websocket';
 import TradingChart from '../components/TradingChart';
+import { useRealBalance } from '../hooks/useRealBalance';
+import { useRealTickers } from '../hooks/useRealTickers';
 
 const Dashboard: React.FC = () => {
+  // Fetch real balance from API with auto-reconnect
+  const { error: connectionError, retryCount } = useRealBalance();
   const { tickers, watchlist, isConnected } = useAppSelector(state => state.market);
   const { currentBalance, availableBalance } = useAppSelector(state => state.trading);
   const { positions, metrics } = useAppSelector(state => state.positions);
   const { isTradingEnabled, isPaperTrading, activeOrders } = useAppSelector(state => state.trading);
   const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT');
 
+  // Fetch real ticker data for watchlist
+  useRealTickers(watchlist);
+
   useEffect(() => {
-    // Subscribe to watchlist symbols
-    watchlist.forEach(symbol => {
-      subscribeToChannel('ticker', { symbol });
-    });
+    // Subscribe to watchlist symbols (disabled as we're using polling)
+    // watchlist.forEach(symbol => {
+    //   subscribeToChannel('ticker', { symbol });
+    // });
   }, [watchlist]);
 
   const formatPrice = (price: number) => {
@@ -64,9 +71,17 @@ const Dashboard: React.FC = () => {
 
       {!isConnected && (
         <Box sx={{ mb: 3 }}>
-          <LinearProgress color="warning" />
+          <LinearProgress color={retryCount > 3 ? "error" : "warning"} />
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Connecting to trading server...
+            {retryCount === 0 
+              ? 'Connecting to trading server...'
+              : `Reconnecting... (attempt ${retryCount})`
+            }
+            {connectionError && (
+              <Typography variant="caption" display="block" color="error">
+                {connectionError}
+              </Typography>
+            )}
           </Typography>
         </Box>
       )}

@@ -10,6 +10,7 @@ import {
 import { Box, Card, CardContent, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useWebSocket from 'react-use-websocket';
+import { useRealKlines } from '../hooks/useRealKlines';
 
 interface TradingChartProps {
   symbol: string;
@@ -32,8 +33,11 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol, height = 500 }) => 
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
   
-  const [timeframe, setTimeframe] = useState('1h');
+  const [timeframe, setTimeframe] = useState('15');
   const [chartType, setChartType] = useState<'candles' | 'line'>('candles');
+  
+  // Fetch real klines data
+  const { klines, loading } = useRealKlines(symbol, timeframe);
   
   // WebSocket connection for real-time data
   const { lastMessage } = useWebSocket(
@@ -125,8 +129,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol, height = 500 }) => 
       },
     });
 
-    // Load initial data (mock data for now)
-    loadHistoricalData();
+    // Initial data will be loaded via useRealKlines hook
 
     // Handle resize
     const handleResize = () => {
@@ -144,50 +147,49 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol, height = 500 }) => 
     };
   }, [theme, height]);
 
-  // Load historical data
-  const loadHistoricalData = async () => {
-    // Generate mock historical data
-    const now = Math.floor(Date.now() / 1000);
-    const data: KlineData[] = [];
+  // Update chart with real klines data
+  useEffect(() => {
+    if (!klines || klines.length === 0 || !candlestickSeriesRef.current || !volumeSeriesRef.current) return;
+    
+    // Convert klines to chart format
+    const chartData: KlineData[] = [];
     const volumeData: { time: UTCTimestamp; value: number; color?: string }[] = [];
     
-    let lastClose = symbol === 'BTCUSDT' ? 65000 : 3200;
+    // Sort klines by timestamp
+    const sortedKlines = [...klines].sort((a, b) => a.timestamp - b.timestamp);
     
-    for (let i = 100; i >= 0; i--) {
-      const time = (now - i * 3600) as UTCTimestamp;
-      const volatility = 0.02;
-      const open = lastClose;
-      const change = (Math.random() - 0.5) * volatility * open;
-      const close = open + change;
-      const high = Math.max(open, close) * (1 + Math.random() * volatility * 0.5);
-      const low = Math.min(open, close) * (1 - Math.random() * volatility * 0.5);
-      const volume = Math.random() * 1000000;
+    sortedKlines.forEach(kline => {
+      const time = (kline.timestamp / 1000) as UTCTimestamp; // Convert to seconds
       
-      data.push({
+      chartData.push({
         time,
-        open,
-        high,
-        low,
-        close,
-        volume,
+        open: kline.open,
+        high: kline.high,
+        low: kline.low,
+        close: kline.close,
+        volume: kline.volume,
       });
       
       volumeData.push({
         time,
-        value: volume,
-        color: close >= open 
+        value: kline.volume,
+        color: kline.close >= kline.open 
           ? theme.palette.success.main + '80'
           : theme.palette.error.main + '80',
       });
-      
-      lastClose = close;
-    }
+    });
     
-    if (candlestickSeriesRef.current && volumeSeriesRef.current) {
-      candlestickSeriesRef.current.setData(data);
+    // Update chart series
+    if (chartData.length > 0) {
+      candlestickSeriesRef.current.setData(chartData);
       volumeSeriesRef.current.setData(volumeData);
+      
+      // Fit content
+      if (chartRef.current) {
+        chartRef.current.timeScale().fitContent();
+      }
     }
-  };
+  }, [klines, theme]);
 
   // Handle real-time updates
   useEffect(() => {
@@ -226,7 +228,7 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol, height = 500 }) => 
   const handleTimeframeChange = (_event: React.MouseEvent<HTMLElement>, newTimeframe: string) => {
     if (newTimeframe) {
       setTimeframe(newTimeframe);
-      loadHistoricalData(); // Reload data for new timeframe
+      // Data will be reloaded automatically by useRealKlines hook
     }
   };
 
@@ -263,12 +265,12 @@ const TradingChart: React.FC<TradingChartProps> = ({ symbol, height = 500 }) => 
               onChange={handleTimeframeChange}
               size="small"
             >
-              <ToggleButton value="1m">1m</ToggleButton>
-              <ToggleButton value="5m">5m</ToggleButton>
-              <ToggleButton value="15m">15m</ToggleButton>
-              <ToggleButton value="1h">1h</ToggleButton>
-              <ToggleButton value="4h">4h</ToggleButton>
-              <ToggleButton value="1d">1D</ToggleButton>
+              <ToggleButton value="1">1M</ToggleButton>
+              <ToggleButton value="5">5M</ToggleButton>
+              <ToggleButton value="15">15M</ToggleButton>
+              <ToggleButton value="60">1H</ToggleButton>
+              <ToggleButton value="240">4H</ToggleButton>
+              <ToggleButton value="D">1D</ToggleButton>
             </ToggleButtonGroup>
           </Box>
         </Box>

@@ -7,6 +7,7 @@ import os
 import sys
 import logging
 from pathlib import Path
+from datetime import datetime
 
 # Add parent directories to path for imports
 root_dir = Path(__file__).parent.parent.parent
@@ -49,13 +50,14 @@ def main():
     
     try:
         import uvicorn
-        from fastapi import FastAPI, HTTPException
+        from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
         from fastapi.middleware.cors import CORSMiddleware
         from ariadne import QueryType, make_executable_schema, graphql_sync
         from ariadne.asgi import GraphQL
         from bybit_connector import get_bybit_connector
         from database.service import DatabaseService
         import json
+        import asyncio
         
         # Initialize services
         logger.info("Initializing Bybit connector...")
@@ -103,6 +105,15 @@ def main():
                 except Exception as e:
                     logger.error(f"Error getting ticker for {symbol}: {e}")
                     return None
+            
+            def get_klines(self, symbol, interval='15', limit=100):
+                """Get kline/candlestick data from Bybit"""
+                try:
+                    klines = self.connector.get_klines(symbol, interval, limit)
+                    return klines
+                except Exception as e:
+                    logger.error(f"Error getting klines for {symbol}: {e}")
+                    return []
                     
             def get_recent_trades(self, limit=10):
                 """Get recent trades from database"""
@@ -179,6 +190,7 @@ def main():
                 balance: Float
                 recentTrades(limit: Int): [Trade]
                 ticker(symbol: String!): Ticker
+                klines(symbol: String!, interval: String, limit: Int): [Kline]
             }
             
             type BotStatus {
@@ -208,11 +220,22 @@ def main():
             
             type Ticker {
                 symbol: String
-                lastPrice: Float
-                bidPrice: Float
-                askPrice: Float
-                volume24h: Float
+                price: Float
+                bid: Float
+                ask: Float
+                volume: Float
+                high24h: Float
+                low24h: Float
                 change24h: Float
+            }
+            
+            type Kline {
+                timestamp: Float
+                open: Float
+                high: Float
+                low: Float
+                close: Float
+                volume: Float
             }
         """
         
@@ -245,11 +268,41 @@ def main():
         def resolve_ticker(obj, info, symbol):
             return api_handler.get_ticker(symbol)
         
+        @query.field("klines")
+        def resolve_klines(obj, info, symbol, interval='15', limit=100):
+            return api_handler.get_klines(symbol, interval, limit)
+        
         # Make executable schema
         schema = make_executable_schema(type_defs, query)
         
         # Add GraphQL endpoint
         app.mount("/graphql", GraphQL(schema, debug=True))
+        
+        # WebSocket endpoint for real-time updates
+        @app.websocket("/ws")
+        async def websocket_endpoint(websocket: WebSocket):
+            await websocket.accept()
+            logger.info("WebSocket client connected")
+            
+            try:
+                while True:
+                    # Send periodic updates
+                    data = {
+                        "type": "status",
+                        "balance": api_handler.get_balance(),
+                        "positions": len(api_handler.get_positions()),
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    await websocket.send_json(data)
+                    
+                    # Wait for 5 seconds before next update
+                    await asyncio.sleep(5)
+                    
+            except WebSocketDisconnect:
+                logger.info("WebSocket client disconnected")
+            except Exception as e:
+                logger.error(f"WebSocket error: {e}")
+                await websocket.close()
         
         logger.info("✅ GraphQL API initialized successfully!")
         logger.info("📊 Starting server on port 8000...")

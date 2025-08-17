@@ -35,6 +35,22 @@ class WebSocketService {
   }
 
   private establishConnection() {
+    // Temporarily disable WebSocket connection until server support is fixed
+    const useWebSocket = false; // Toggle this to enable/disable WebSocket
+    
+    if (!useWebSocket) {
+      console.log('WebSocket connection disabled - using polling mode');
+      if (this.dispatch) {
+        this.dispatch(setConnectionStatus(false));
+        this.dispatch(addNotification({
+          type: 'info', 
+          title: 'Polling Mode',
+          message: 'Using API polling for real-time updates',
+        }));
+      }
+      return;
+    }
+    
     try {
       // Connect to backend WebSocket server
       const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws';

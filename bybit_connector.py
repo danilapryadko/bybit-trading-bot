@@ -65,12 +65,22 @@ class BybitConnector:
             
             # Extract USDT balance
             accounts = response.get('result', {}).get('list', [])
+            logger.info(f"Wallet response: {response.get('result', {})}")
             if accounts:
                 coins = accounts[0].get('coin', [])
                 for coin in coins:
                     if coin.get('coin') == 'USDT':
-                        # Return available balance
-                        balance = float(coin.get('availableToWithdraw', 0))
+                        # Return available balance - handle empty string case
+                        balance_str = coin.get('availableToWithdraw', '0')
+                        if balance_str == '':
+                            balance_str = coin.get('walletBalance', '0')
+                        try:
+                            balance = float(balance_str) if balance_str else 0.0
+                        except (ValueError, TypeError):
+                            logger.error(f"Invalid balance value: {balance_str}")
+                            # Try wallet balance instead
+                            wallet_balance = coin.get('walletBalance', '0')
+                            balance = float(wallet_balance) if wallet_balance else 0.0
                         logger.info(f"Current balance: {balance} USDT")
                         return balance
             
@@ -181,7 +191,7 @@ class BybitConnector:
             klines = []
             for k in response.get('result', {}).get('list', []):
                 klines.append({
-                    'timestamp': int(k[0]),
+                    'timestamp': float(k[0]) if k[0] else 0.0,  # Already in milliseconds from Bybit
                     'open': float(k[1]),
                     'high': float(k[2]),
                     'low': float(k[3]),

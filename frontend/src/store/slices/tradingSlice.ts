@@ -45,12 +45,12 @@ const initialState: TradingState = {
   orderHistory: [],
   tradingSignals: [],
   isTradingEnabled: false,
-  isPaperTrading: true,
+  isPaperTrading: false, // Real trading by default
   selectedStrategy: 'ml_ensemble',
   riskPerTrade: 1.0,
   maxPositions: 3,
-  currentBalance: 10000,
-  availableBalance: 10000,
+  currentBalance: 0, // Will be fetched from API
+  availableBalance: 0, // Will be fetched from API
 };
 
 const tradingSlice = createSlice({
