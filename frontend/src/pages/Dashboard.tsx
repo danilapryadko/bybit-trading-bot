@@ -27,17 +27,37 @@ import {
 import { useAppSelector } from '../store/hooks';
 import { subscribeToChannel } from '../services/websocket';
 import TradingChart from '../components/TradingChart';
-import { useRealBalance } from '../hooks/useRealBalance';
 import { useRealTickers } from '../hooks/useRealTickers';
+import WatchlistManager from '../components/WatchlistManager';
+import { useAppDispatch } from '../store/hooks';
+import { addToWatchlist } from '../store/slices/marketSlice';
 
 const Dashboard: React.FC = () => {
-  // Fetch real balance from API with auto-reconnect
-  const { error: connectionError, retryCount } = useRealBalance();
+  const dispatch = useAppDispatch();
+  // Balance is now fetched in Layout component
   const { tickers, watchlist, isConnected } = useAppSelector(state => state.market);
   const { currentBalance, availableBalance } = useAppSelector(state => state.trading);
   const { positions, metrics } = useAppSelector(state => state.positions);
   const { isTradingEnabled, isPaperTrading, activeOrders } = useAppSelector(state => state.trading);
   const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT');
+
+  // Load watchlist from localStorage on mount
+  useEffect(() => {
+    const savedWatchlist = localStorage.getItem('tradingWatchlist');
+    if (savedWatchlist) {
+      try {
+        const parsedWatchlist = JSON.parse(savedWatchlist);
+        // Clear current watchlist and add saved ones
+        parsedWatchlist.forEach((pair: string) => {
+          if (!watchlist.includes(pair)) {
+            dispatch(addToWatchlist(pair));
+          }
+        });
+      } catch (e) {
+        console.error('Failed to load watchlist from localStorage:', e);
+      }
+    }
+  }, []);
 
   // Fetch real ticker data for watchlist
   useRealTickers(watchlist);
@@ -71,17 +91,9 @@ const Dashboard: React.FC = () => {
 
       {!isConnected && (
         <Box sx={{ mb: 3 }}>
-          <LinearProgress color={retryCount > 3 ? "error" : "warning"} />
+          <LinearProgress color="warning" />
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            {retryCount === 0 
-              ? 'Connecting to trading server...'
-              : `Reconnecting... (attempt ${retryCount})`
-            }
-            {connectionError && (
-              <Typography variant="caption" display="block" color="error">
-                {connectionError}
-              </Typography>
-            )}
+            Connecting to trading server...
           </Typography>
         </Box>
       )}
@@ -205,9 +217,19 @@ const Dashboard: React.FC = () => {
                     );
                   }
                   return (
-                    <TableRow key={symbol}>
+                    <TableRow 
+                      key={symbol}
+                      hover
+                      onClick={() => setSelectedSymbol(symbol)}
+                      sx={{ 
+                        cursor: 'pointer',
+                        bgcolor: selectedSymbol === symbol ? 'action.selected' : 'inherit'
+                      }}
+                    >
                       <TableCell>
-                        <Typography variant="subtitle2">{symbol}</Typography>
+                        <Typography variant="subtitle2">
+                          {symbol.replace('USDT', '')} / USDT
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2">{formatPrice(ticker.lastPrice)}</Typography>
@@ -255,13 +277,15 @@ const Dashboard: React.FC = () => {
             <Typography variant="h6">
               Price Chart
             </Typography>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
               <Select
                 value={selectedSymbol}
                 onChange={(e) => setSelectedSymbol(e.target.value)}
               >
                 {watchlist.map(symbol => (
-                  <MenuItem key={symbol} value={symbol}>{symbol}</MenuItem>
+                  <MenuItem key={symbol} value={symbol}>
+                    {symbol.replace('USDT', '')} / USDT
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -322,6 +346,9 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
       )}
+      
+      {/* Watchlist Manager - Floating Action Button */}
+      <WatchlistManager />
     </Box>
   );
 };

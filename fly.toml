@@ -1,64 +1,53 @@
-# fly.toml - Configuration for Fly.io deployment
-app = "bybit-danila-bot"
-primary_region = "sin"  # Singapore - близко к Bybit серверам
+app = "bybit-danila-api"
+primary_region = "sin"
 kill_signal = "SIGINT"
 kill_timeout = 5
 
-[build]
-  dockerfile = "Dockerfile"
+# Use Dockerfile for building
 
 [env]
-  ENVIRONMENT = "production"
-  USE_MAINNET = "false"  # Set to "true" for real money trading
-  PORT = "8080"
-  MAX_POSITIONS = "3"
-  RISK_PER_TRADE = "1.0"
-  # Remove PAPER_TRADING and INITIAL_CAPITAL - use real Bybit data
+  PORT = "8000"
+  USE_MAINNET = "true"
+  PYTHONUNBUFFERED = "1"
 
-# Основной процесс - торговый бот с Telegram + GraphQL
-[processes]
-  bot = "python start_with_graphql.py"
-
-# Persistent storage для БД и логов
-[mounts]
-  source = "bot_data"
-  destination = "/data"
-
-# HTTP service for GraphQL API and WebSocket
-[[services]]
-  http_checks = []
+[http_service]
   internal_port = 8000
-  processes = ["bot"]  # Link to bot process
-  protocol = "tcp"
-  script_checks = []
-  
-  [services.concurrency]
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "connections"
     hard_limit = 25
     soft_limit = 20
-    type = "connections"
-  
-  [[services.ports]]
-    force_https = true
-    handlers = ["http"]
-    port = 80
-  
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
-  
-  [[services.tcp_checks]]
-    grace_period = "1s"
-    interval = "15s"
-    restart_limit = 0
-    timeout = "2s"
 
-# WebSocket service
 [[services]]
-  http_checks = []
-  internal_port = 8001
-  processes = ["bot"]
   protocol = "tcp"
+  internal_port = 8000
   
   [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    
+  [[services.ports]]
+    port = 443
     handlers = ["tls", "http"]
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8001
+  
+  [[services.ports]]
     port = 8001
+    handlers = ["tls", "http"]
+
+[checks]
+  [checks.health]
+    grace_period = "10s"
+    interval = "30s"
+    method = "get"
+    path = "/health"
+    port = 8000
+    timeout = "5s"
+    type = "http"

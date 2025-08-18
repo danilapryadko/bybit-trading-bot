@@ -1,15 +1,16 @@
-# 🚀 Deployment Guide for Microservices
+# 🚀 Deployment Guide
+
+## Overview
+
+This guide covers deployment of the Bybit Trading Bot to production using Fly.io, Docker, and other cloud platforms.
 
 ## Prerequisites
-- Fly.io CLI installed (`brew install flyctl`)
-- Fly.io account with verified payment method
-- Access to Bybit API keys
-- PostgreSQL database URL
 
-## Service Deployment Order
-1. GraphQL API Service (new)
-2. Telegram Bot Service (update existing)
-3. Dashboard (update configuration)
+- Fly.io account with verified payment method
+- Docker installed locally
+- GitHub repository
+- Bybit API keys (mainnet)
+- PostgreSQL database URL
 
 ## 1. Deploy GraphQL API Service
 

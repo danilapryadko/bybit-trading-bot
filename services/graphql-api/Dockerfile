@@ -13,17 +13,18 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and main file
+# Copy requirements and main files
 COPY requirements.txt .
 COPY main.py .
+COPY fixed_main.py .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy shared code from parent directory
-COPY ../../bybit_connector.py .
-COPY ../../config.py .
-COPY ../../database ./database
+# Copy shared code (already in directory)
+COPY bybit_connector.py .
+COPY config.py .
+COPY database ./database
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
@@ -36,5 +37,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose port
 EXPOSE 8000
 
-# Run GraphQL API
-CMD ["python", "main.py"]
+# Run Fixed GraphQL API with MAINNET support
+CMD ["python", "fixed_main.py"]

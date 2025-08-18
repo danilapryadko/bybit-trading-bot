@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Card,
@@ -16,23 +16,82 @@ import {
   Button,
   IconButton,
   LinearProgress,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Edit as EditIcon,
 } from '@mui/icons-material';
-import { useAppSelector } from '../store/hooks';
-import { sendMessage } from '../services/websocket';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_POSITIONS } from '../graphql/queries';
+import { CLOSE_POSITION } from '../graphql/mutations';
+import apolloClient from '../services/apollo';
 
 const Positions: React.FC = () => {
-  const { positions, metrics, isLoading } = useAppSelector(state => state.positions);
+  const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' as 'success' | 'error' | 'info' });
+  
+  // GraphQL queries and mutations
+  const { data: positionsData, loading: isLoading, refetch: refetchPositions } = useQuery(GET_POSITIONS, {
+    client: apolloClient,
+    pollInterval: 5000, // Refresh every 5 seconds
+  });
 
-  const handleClosePosition = (symbol: string) => {
-    if (window.confirm(`Are you sure you want to close position for ${symbol}?`)) {
-      sendMessage({
-        type: 'close_position',
-        data: { symbol },
+  const [closePosition, { loading: closingPosition }] = useMutation(CLOSE_POSITION, {
+    client: apolloClient,
+    onCompleted: (data) => {
+      if (data.closePosition.success) {
+        setNotification({
+          open: true,
+          message: `Position closed successfully! Realized P&L: $${data.closePosition.realizedPnl?.toFixed(2) || '0.00'}`,
+          severity: 'success',
+        });
+        refetchPositions();
+      } else {
+        setNotification({
+          open: true,
+          message: data.closePosition.message || 'Failed to close position',
+          severity: 'error',
+        });
+      }
+    },
+    onError: (error) => {
+      setNotification({
+        open: true,
+        message: error.message,
+        severity: 'error',
       });
+    },
+  });
+
+  const positions = positionsData?.positions || [];
+  
+  // Calculate metrics
+  const metrics = {
+    totalUnrealizedPnl: positions.reduce((sum: number, p: any) => sum + (p.unrealizedPnl || 0), 0),
+    totalPositionValue: positions.reduce((sum: number, p: any) => sum + (p.size * p.markPrice), 0),
+    totalMarginUsed: positions.reduce((sum: number, p: any) => sum + (p.size * p.avgPrice / (p.leverage || 1)), 0),
+    marginRatio: 0,
+    accountEquity: 0,
+    numberOfPositions: positions.length,
+  };
+
+  const handleClosePosition = async (symbol: string) => {
+    if (window.confirm(`Are you sure you want to close position for ${symbol}?`)) {
+      await closePosition({
+        variables: { symbol },
+      });
+    }
+  };
+
+  const handleCloseAllPositions = async () => {
+    if (window.confirm('Are you sure you want to close ALL positions?')) {
+      for (const position of positions) {
+        await closePosition({
+          variables: { symbol: position.symbol },
+        });
+      }
     }
   };
 
@@ -137,13 +196,10 @@ const Positions: React.FC = () => {
               <Button
                 color="error"
                 variant="outlined"
-                onClick={() => {
-                  if (window.confirm('Close all positions?')) {
-                    sendMessage({ type: 'close_all_positions' });
-                  }
-                }}
+                onClick={handleCloseAllPositions}
+                disabled={closingPosition}
               >
-                Close All
+                {closingPosition ? <CircularProgress size={20} /> : 'Close All'}
               </Button>
             )}
           </Box>
@@ -191,14 +247,14 @@ const Positions: React.FC = () => {
                         </TableCell>
                         <TableCell align="center">
                           <Chip
-                            label={`${position.leverage}x`}
+                            label={`${position.leverage || 1}x`}
                             size="small"
                             variant="outlined"
                           />
                         </TableCell>
                         <TableCell align="right">{position.size}</TableCell>
-                        <TableCell align="right">{formatPrice(position.entryPrice)}</TableCell>
-                        <TableCell align="right">{formatPrice(position.markPrice)}</TableCell>
+                        <TableCell align="right">{formatPrice(position.avgPrice || 0)}</TableCell>
+                        <TableCell align="right">{formatPrice(position.markPrice || 0)}</TableCell>
                         <TableCell align="right">
                           {position.liquidationPrice ? (
                             <Typography
@@ -221,15 +277,15 @@ const Positions: React.FC = () => {
                             variant="body2"
                             color={position.unrealizedPnl >= 0 ? 'success.main' : 'error.main'}
                           >
-                            {formatPrice(position.unrealizedPnl)}
+                            {formatPrice(position.unrealizedPnl || 0)}
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
                           <Typography
                             variant="body2"
-                            color={position.pnlPercent >= 0 ? 'success.main' : 'error.main'}
+                            color={position.unrealizedPnl >= 0 ? 'success.main' : 'error.main'}
                           >
-                            {formatPercent(position.pnlPercent)}
+                            {position.size && position.avgPrice ? formatPercent((position.unrealizedPnl / (position.size * position.avgPrice)) * 100) : '0.00%'}
                           </Typography>
                         </TableCell>
                         <TableCell align="center">
@@ -247,8 +303,9 @@ const Positions: React.FC = () => {
                               size="small"
                               color="error"
                               onClick={() => handleClosePosition(position.symbol)}
+                              disabled={closingPosition}
                             >
-                              <CloseIcon fontSize="small" />
+                              {closingPosition ? <CircularProgress size={16} /> : <CloseIcon fontSize="small" />}
                             </IconButton>
                           </Box>
                         </TableCell>
@@ -261,6 +318,22 @@ const Positions: React.FC = () => {
           )}
         </CardContent>
       </Card>
+      
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ ...notification, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setNotification({ ...notification, open: false })}
+          severity={notification.severity}
+          sx={{ width: '100%' }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

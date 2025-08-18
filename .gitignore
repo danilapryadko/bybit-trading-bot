@@ -85,3 +85,23 @@ historical_data/
 tmp/
 temp/
 *.tmp
+
+# Test results
+test-results/
+playwright-report/
+*.test-results.xml
+coverage.xml
+screenshots/
+test_env/
+
+# Documentation build
+docs/_build/
+docs/.doctrees/
+
+# Cache
+.cache/
+*.cache
+
+# System files
+Thumbs.db
+desktop.ini

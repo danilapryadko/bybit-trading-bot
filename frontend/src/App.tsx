@@ -14,6 +14,9 @@ import Positions from './pages/Positions';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import Backtest from './pages/Backtest';
+import Strategies from './pages/Strategies';
+import RiskManagement from './pages/RiskManagement';
+import Portfolio from './pages/Portfolio';
 
 const App: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -36,6 +39,9 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/trading" element={<Trading />} />
           <Route path="/positions" element={<Positions />} />
+          <Route path="/strategies" element={<Strategies />} />
+          <Route path="/risk" element={<RiskManagement />} />
+          <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/backtest" element={<Backtest />} />
           <Route path="/settings" element={<Settings />} />

@@ -35,5 +35,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose ports
 EXPOSE 8000 8080
 
-# Run only GraphQL API server with REAL Bybit connection (no Telegram bot conflicts)
-CMD ["python", "start_api_only.py"]
+# Run complete GraphQL API
+CMD ["python", "main.py"]

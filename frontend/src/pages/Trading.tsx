@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Grid,
   Card,
@@ -25,6 +25,8 @@ import {
   Chip,
   IconButton,
   Alert,
+  Snackbar,
+  CircularProgress,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -33,7 +35,10 @@ import {
 } from '@mui/icons-material';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { setTradingEnabled, setPaperTrading } from '../store/slices/tradingSlice';
-import { sendMessage } from '../services/websocket';
+import { useMutation, useQuery } from '@apollo/client';
+import { PLACE_ORDER, CANCEL_ORDER } from '../graphql/mutations';
+import { GET_ORDERS } from '../graphql/queries';
+import apolloClient from '../services/apollo';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -69,55 +74,145 @@ const Trading: React.FC = () => {
     stopPrice: '',
     timeInForce: 'GTC',
   });
+  const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' as 'success' | 'error' | 'info' });
 
   const { activeSymbol, tickers } = useAppSelector(state => state.market);
   const {
     isTradingEnabled,
     isPaperTrading,
-    activeOrders,
     orderHistory,
     tradingSignals,
-    // selectedStrategy,
   } = useAppSelector(state => state.trading);
+
+  // GraphQL queries and mutations
+  const { data: ordersData, loading: ordersLoading, refetch: refetchOrders } = useQuery(GET_ORDERS, {
+    client: apolloClient,
+    pollInterval: 5000, // Refresh every 5 seconds
+  });
+
+  const [placeOrder, { loading: placingOrder }] = useMutation(PLACE_ORDER, {
+    client: apolloClient,
+    onCompleted: (data) => {
+      if (data.placeOrder.success) {
+        setNotification({
+          open: true,
+          message: `Order placed successfully! Order ID: ${data.placeOrder.orderId}`,
+          severity: 'success',
+        });
+        setOrderForm({
+          ...orderForm,
+          quantity: '',
+          price: '',
+          stopPrice: '',
+        });
+        refetchOrders();
+      } else {
+        setNotification({
+          open: true,
+          message: data.placeOrder.message || 'Failed to place order',
+          severity: 'error',
+        });
+      }
+    },
+    onError: (error) => {
+      setNotification({
+        open: true,
+        message: error.message,
+        severity: 'error',
+      });
+    },
+  });
+
+  const [cancelOrder, { loading: cancellingOrder }] = useMutation(CANCEL_ORDER, {
+    client: apolloClient,
+    onCompleted: (data) => {
+      if (data.cancelOrder.success) {
+        setNotification({
+          open: true,
+          message: 'Order cancelled successfully',
+          severity: 'success',
+        });
+        refetchOrders();
+      } else {
+        setNotification({
+          open: true,
+          message: data.cancelOrder.message || 'Failed to cancel order',
+          severity: 'error',
+        });
+      }
+    },
+    onError: (error) => {
+      setNotification({
+        open: true,
+        message: error.message,
+        severity: 'error',
+      });
+    },
+  });
+
+  const activeOrders = ordersData?.recentTrades || [];
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  const handleOrderSubmit = () => {
+  const handleOrderSubmit = async () => {
     if (!orderForm.quantity) {
-      alert('Please enter quantity');
+      setNotification({
+        open: true,
+        message: 'Please enter quantity',
+        severity: 'error',
+      });
       return;
     }
 
     if (orderForm.orderType === 'Limit' && !orderForm.price) {
-      alert('Please enter price for limit order');
+      setNotification({
+        open: true,
+        message: 'Please enter price for limit order',
+        severity: 'error',
+      });
       return;
     }
 
-    sendMessage({
-      type: 'place_order',
-      data: {
-        ...orderForm,
-        quantity: parseFloat(orderForm.quantity),
-        price: orderForm.price ? parseFloat(orderForm.price) : undefined,
-        stopPrice: orderForm.stopPrice ? parseFloat(orderForm.stopPrice) : undefined,
-      },
-    });
+    // Check if trading is enabled
+    if (!isTradingEnabled) {
+      setNotification({
+        open: true,
+        message: 'Please enable trading first',
+        severity: 'error',
+      });
+      return;
+    }
 
-    // Reset form
-    setOrderForm({
-      ...orderForm,
-      quantity: '',
-      price: '',
-      stopPrice: '',
+    // Paper trading check
+    if (isPaperTrading) {
+      setNotification({
+        open: true,
+        message: 'Paper trading mode - order will be simulated',
+        severity: 'info',
+      });
+    }
+
+    // Place order via GraphQL
+    await placeOrder({
+      variables: {
+        input: {
+          symbol: orderForm.symbol,
+          side: orderForm.side,
+          orderType: orderForm.orderType,
+          quantity: parseFloat(orderForm.quantity),
+          price: orderForm.price ? parseFloat(orderForm.price) : null,
+          stopPrice: orderForm.stopPrice ? parseFloat(orderForm.stopPrice) : null,
+          timeInForce: orderForm.timeInForce,
+        },
+      },
     });
   };
 
-  const handleCancelOrder = (orderId: string) => {
-    sendMessage({
-      type: 'cancel_order',
-      data: { orderId },
+  const handleCancelOrder = async (orderId: string) => {
+    await cancelOrder({
+      variables: { orderId },
     });
   };
 
@@ -244,10 +339,14 @@ const Trading: React.FC = () => {
                   variant="contained"
                   color={orderForm.side === 'Buy' ? 'success' : 'error'}
                   onClick={handleOrderSubmit}
-                  disabled={!isTradingEnabled}
+                  disabled={!isTradingEnabled || placingOrder}
                   fullWidth
                 >
-                  {orderForm.side} {orderForm.symbol}
+                  {placingOrder ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    `${orderForm.side} ${orderForm.symbol}`
+                  )}
                 </Button>
               </Box>
             </CardContent>
@@ -330,7 +429,7 @@ const Trading: React.FC = () => {
                         </TableRow>
                       ) : (
                         activeOrders.map((order) => (
-                          <TableRow key={order.orderId}>
+                          <TableRow key={order.id}>
                             <TableCell>{order.symbol}</TableCell>
                             <TableCell>
                               <Chip
@@ -340,21 +439,26 @@ const Trading: React.FC = () => {
                                 variant="outlined"
                               />
                             </TableCell>
-                            <TableCell>{order.orderType}</TableCell>
+                            <TableCell>Market</TableCell>
                             <TableCell align="right">{order.quantity}</TableCell>
                             <TableCell align="right">
                               {order.price ? `$${order.price.toFixed(2)}` : 'Market'}
                             </TableCell>
                             <TableCell>
-                              <Chip label={order.status} size="small" />
+                              <Chip label={order.status || 'Filled'} size="small" />
                             </TableCell>
                             <TableCell align="center">
                               <IconButton
                                 size="small"
-                                onClick={() => handleCancelOrder(order.orderId)}
+                                onClick={() => handleCancelOrder(order.id)}
                                 color="error"
+                                disabled={cancellingOrder}
                               >
-                                <DeleteIcon />
+                                {cancellingOrder ? (
+                                  <CircularProgress size={20} />
+                                ) : (
+                                  <DeleteIcon />
+                                )}
                               </IconButton>
                             </TableCell>
                           </TableRow>
@@ -432,6 +536,22 @@ const Trading: React.FC = () => {
           </Card>
         </Grid>
       </Grid>
+      
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ ...notification, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setNotification({ ...notification, open: false })}
+          severity={notification.severity}
+          sx={{ width: '100%' }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

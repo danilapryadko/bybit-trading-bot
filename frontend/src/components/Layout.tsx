@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -27,10 +27,14 @@ import {
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
   Circle as CircleIcon,
+  Security as RiskIcon,
+  Psychology as StrategyIcon,
+  PieChart as PortfolioIcon,
 } from '@mui/icons-material';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { toggleNotificationsPanel } from '../store/slices/notificationsSlice';
 import NotificationsPanel from './NotificationsPanel';
+import { useRealBalance } from '../hooks/useRealBalance';
 
 const drawerWidth = 240;
 
@@ -43,6 +47,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  
+  // Поддерживаем соединение с API на всех страницах
+  const { isConnected: apiConnected } = useRealBalance();
   
   const isConnected = useAppSelector(state => state.market.isConnected);
   const unreadCount = useAppSelector(state => state.notifications.unreadCount);
@@ -57,6 +64,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Trading', icon: <TradingIcon />, path: '/trading' },
     { text: 'Positions', icon: <PositionsIcon />, path: '/positions' },
+    { text: 'Portfolio', icon: <PortfolioIcon />, path: '/portfolio' },
+    { text: 'Strategies', icon: <StrategyIcon />, path: '/strategies' },
+    { text: 'Risk Management', icon: <RiskIcon />, path: '/risk' },
     { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics' },
     { text: 'Backtest', icon: <BacktestIcon />, path: '/backtest' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },

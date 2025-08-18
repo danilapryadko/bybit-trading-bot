@@ -1,0 +1,136 @@
+type PortfolioAsset {
+  symbol: String!
+  weight: Float!
+  value: Float!
+  returns: Float!
+  risk: Float!
+}
+
+type PortfolioMetrics {
+  totalValue: Float!
+  dailyReturn: Float!
+  totalReturn: Float!
+  volatility: Float!
+  sharpeRatio: Float!
+  sortinoRatio: Float!
+  maxDrawdown: Float!
+  calmarRatio: Float!
+  var95: Float!
+  effectiveAssets: Float!
+}
+
+type OptimizationResult {
+  weights: JSON!
+  expectedReturn: Float!
+  expectedVolatility: Float!
+  sharpeRatio: Float!
+  method: String!
+  regime: String!
+  success: Boolean!
+}
+
+type CorrelationMatrix {
+  matrix: JSON!
+  averageCorrelation: Float!
+  maxCorrelation: Float!
+  minCorrelation: Float!
+  highlyCorrelated: [CorrelationPair!]!
+}
+
+type CorrelationPair {
+  asset1: String!
+  asset2: String!
+  correlation: Float!
+  pValue: Float!
+  stable: Boolean!
+}
+
+type RebalanceRecommendation {
+  needed: Boolean!
+  reason: String!
+  maxDeviation: Float!
+  trades: [RebalanceTrade!]!
+  transactionCost: Float!
+}
+
+type RebalanceTrade {
+  symbol: String!
+  currentValue: Float!
+  targetValue: Float!
+  tradeValue: Float!
+  tradeType: String!
+  tradeCost: Float!
+}
+
+type AssetContribution {
+  symbol: String!
+  weight: Float!
+  returnContribution: Float!
+  riskContribution: Float!
+  expectedReturn: Float!
+  standaloneRisk: Float!
+}
+
+type MarketRegime {
+  regime: String!
+  confidence: Float!
+  indicators: JSON!
+  allocation: JSON!
+}
+
+type Query {
+  # Portfolio Overview
+  getPortfolioSummary: PortfolioMetrics!
+  getPortfolioAssets: [PortfolioAsset!]!
+  getPortfolioHistory(period: Int!): JSON!
+  
+  # Optimization
+  optimizePortfolio(method: String!, assets: [String!]!): OptimizationResult!
+  getOptimalWeights: JSON!
+  evaluateAllocation(weights: JSON!): JSON!
+  
+  # Correlation Analysis
+  getCorrelationMatrix(assets: [String!]!): CorrelationMatrix!
+  findHedgeOpportunities: [CorrelationPair!]!
+  getAssetBeta(asset: String!, benchmark: String!): JSON!
+  
+  # Rebalancing
+  checkRebalanceNeeded: RebalanceRecommendation!
+  getRebalancingTrades(targetWeights: JSON!): [RebalanceTrade!]!
+  
+  # Risk Analysis
+  getPortfolioVaR(confidence: Float!): JSON!
+  getAssetContributions: [AssetContribution!]!
+  getCorrelationRisk: JSON!
+  
+  # Market Analysis
+  detectMarketRegime: MarketRegime!
+  getRegimeAllocation(regime: String!): JSON!
+}
+
+type Mutation {
+  # Portfolio Management
+  addPortfolioAsset(symbol: String!, allocation: Float!): Boolean!
+  removePortfolioAsset(symbol: String!): Boolean!
+  updateAssetWeight(symbol: String!, weight: Float!): Boolean!
+  
+  # Optimization
+  setOptimizationConstraints(constraints: JSON!): Boolean!
+  setTargetReturn(target: Float!): Boolean!
+  setMaxRisk(risk: Float!): Boolean!
+  
+  # Rebalancing
+  executeRebalance(trades: JSON!): Boolean!
+  setRebalanceThreshold(threshold: Float!): Boolean!
+  
+  # Alerts
+  setPortfolioAlert(type: String!, threshold: Float!): Boolean!
+  clearPortfolioAlerts: Boolean!
+}
+
+type Subscription {
+  portfolioUpdates: PortfolioMetrics!
+  correlationChanges: CorrelationMatrix!
+  rebalanceAlerts: RebalanceRecommendation!
+  regimeChanges: MarketRegime!
+}

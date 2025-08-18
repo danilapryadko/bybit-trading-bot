@@ -1,8 +1,8 @@
-# 🏗️ Microservices Architecture
+# 🏗️ System Architecture
 
-## System Architecture Overview
+## Overview
 
-The Bybit Trading Bot is built using a microservices architecture that separates concerns and allows for independent scaling and deployment.
+The Bybit Trading Bot is built on a microservices architecture with clear separation between frontend, API layer, and external services. The system is designed for high availability, real-time data processing, and scalable trading operations for USDT Perpetual Futures on Bybit.
 
 ## Services
 

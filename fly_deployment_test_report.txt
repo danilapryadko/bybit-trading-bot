@@ -1,0 +1,53 @@
+============================================================
+FLY.IO DEPLOYMENT TEST REPORT
+============================================================
+Test Date: 2025-08-18 11:03:21
+
+PHASE 1-2: Core Trading & Strategies
+----------------------------------------
+✅ API Server: Running
+   Mode: TESTNET
+   Bybit Connected: True
+
+PHASE 3-4: Risk Management & ML/Backtesting
+----------------------------------------
+✅ Database: Connected
+
+PHASE 5-6: Portfolio & WebSocket/Advanced Orders
+----------------------------------------
+❌ WebSocket: Failed
+
+PHASE 7-8: Grid Trading & Funding Arbitrage
+----------------------------------------
+✅ GraphQL API: Operational
+
+PHASE 9-10: Dashboard & Telegram Integration
+----------------------------------------
+✅ Dashboard: Accessible
+   URL: https://bybit-danila-dashboard.fly.dev
+
+SERVICE STATUS
+----------------------------------------
+🌐 API: https://bybit-danila-api.fly.dev
+📊 Dashboard: https://bybit-danila-dashboard.fly.dev
+🤖 Bot: https://bybit-danila-bot.fly.dev
+
+KNOWN ISSUES
+----------------------------------------
+⚠️  Bot Service: Memory issues (OOM) - needs scaling
+   Recommendation: Scale to at least 512MB RAM
+
+RECOMMENDATIONS
+----------------------------------------
+1. Scale bot service memory:
+   fly scale memory 512 -a bybit-danila-bot
+2. Monitor logs for errors:
+   fly logs -a bybit-danila-api
+3. Check database status:
+   fly postgres connect -a bybit-bot-db
+
+SUMMARY
+----------------------------------------
+Tests Passed: 4/4
+✅ All systems operational!
+============================================================

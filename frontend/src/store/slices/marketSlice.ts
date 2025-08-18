@@ -63,7 +63,7 @@ const initialState: MarketState = {
   trades: {},
   klines: {},
   activeSymbol: 'BTCUSDT',
-  watchlist: ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'],
+  watchlist: ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT', 'AVAXUSDT'],
   isConnected: false,
   lastUpdate: Date.now(),
 };
