@@ -394,6 +394,189 @@ def resolve_risk_settings(*_):
     }
 
 # Mutation Resolvers
+@mutation.field("placeOrder")
+def resolve_place_order(*_, order: Dict[str, Any]):
+    """Place a new order with Safe Orders support"""
+    try:
+        if not bot_state.bybit_client:
+            return {
+                "success": False,
+                "message": "Trading client not initialized"
+            }
+        
+        # Extract order parameters
+        symbol = order.get("symbol", "BTCUSDT")
+        side = order.get("side", "Buy")  # Buy or Sell
+        order_type = order.get("orderType", "Market")
+        quantity = float(order.get("quantity", 0))
+        price = order.get("price")
+        stop_loss = order.get("stopLoss")
+        take_profit = order.get("takeProfit")
+        time_in_force = order.get("timeInForce", "IOC" if order_type == "Market" else "GTC")
+        reduce_only = order.get("reduceOnly", False)
+        
+        # Safety checks
+        if quantity <= 0:
+            return {
+                "success": False,
+                "message": "Invalid quantity"
+            }
+        
+        # Check balance
+        balance = get_account_balance()
+        if balance < quantity * (price if price else get_ticker(symbol)["lastPrice"]):
+            return {
+                "success": False,
+                "message": "Insufficient balance"
+            }
+        
+        # Prepare order parameters
+        order_params = {
+            "category": "linear",
+            "symbol": symbol,
+            "side": side,
+            "orderType": order_type,
+            "qty": str(quantity),
+            "timeInForce": time_in_force,
+            "reduceOnly": reduce_only
+        }
+        
+        # Add price for limit orders
+        if order_type == "Limit" and price:
+            order_params["price"] = str(price)
+        
+        # Add stop loss
+        if stop_loss:
+            order_params["stopLoss"] = str(stop_loss)
+        
+        # Add take profit
+        if take_profit:
+            order_params["takeProfit"] = str(take_profit)
+        
+        logger.info(f"Placing order: {order_params}")
+        
+        # Place the order
+        result = bot_state.bybit_client.place_order(**order_params)
+        
+        if result['retCode'] == 0:
+            order_id = result['result']['orderId']
+            logger.info(f"Order placed successfully: {order_id}")
+            
+            return {
+                "success": True,
+                "orderId": order_id,
+                "message": f"Order placed: {side} {quantity} {symbol}"
+            }
+        else:
+            logger.error(f"Order failed: {result}")
+            return {
+                "success": False,
+                "message": result.get('retMsg', 'Order placement failed')
+            }
+            
+    except Exception as e:
+        logger.error(f"Error placing order: {e}")
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+@mutation.field("cancelOrder")
+def resolve_cancel_order(*_, orderId: str, symbol: str):
+    """Cancel an open order"""
+    try:
+        if not bot_state.bybit_client:
+            return {
+                "success": False,
+                "message": "Trading client not initialized"
+            }
+        
+        result = bot_state.bybit_client.cancel_order(
+            category="linear",
+            symbol=symbol,
+            orderId=orderId
+        )
+        
+        if result['retCode'] == 0:
+            return {
+                "success": True,
+                "message": f"Order {orderId} cancelled"
+            }
+        else:
+            return {
+                "success": False,
+                "message": result.get('retMsg', 'Cancellation failed')
+            }
+            
+    except Exception as e:
+        logger.error(f"Error cancelling order: {e}")
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+@mutation.field("closePosition")
+def resolve_close_position(*_, symbol: str):
+    """Close an open position"""
+    try:
+        if not bot_state.bybit_client:
+            return {
+                "success": False,
+                "message": "Trading client not initialized"
+            }
+        
+        # Get current position
+        positions = bot_state.bybit_client.get_positions(
+            category="linear",
+            symbol=symbol
+        )
+        
+        if positions['retCode'] != 0:
+            return {
+                "success": False,
+                "message": "Failed to get position"
+            }
+        
+        position_list = positions['result']['list']
+        if not position_list or float(position_list[0]['size']) == 0:
+            return {
+                "success": False,
+                "message": "No open position found"
+            }
+        
+        position = position_list[0]
+        size = float(position['size'])
+        side = "Sell" if position['side'] == "Buy" else "Buy"
+        
+        # Place market order to close position
+        result = bot_state.bybit_client.place_order(
+            category="linear",
+            symbol=symbol,
+            side=side,
+            orderType="Market",
+            qty=str(size),
+            timeInForce="IOC",
+            reduceOnly=True
+        )
+        
+        if result['retCode'] == 0:
+            return {
+                "success": True,
+                "message": f"Position closed for {symbol}"
+            }
+        else:
+            return {
+                "success": False,
+                "message": result.get('retMsg', 'Failed to close position')
+            }
+            
+    except Exception as e:
+        logger.error(f"Error closing position: {e}")
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
 @mutation.field("startBot")
 def resolve_start_bot(*_):
     """Start the trading bot"""
