@@ -160,7 +160,7 @@ jobs:
         echo "Backup created successfully"
         
     - name: Upload backup to artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trading-data-backup-${{ github.run_id }}
         path: /tmp/backup_*.tar.gz

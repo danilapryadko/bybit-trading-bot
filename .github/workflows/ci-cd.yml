@@ -121,7 +121,7 @@ jobs:
     
     - name: Archive test results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results
         path: |
@@ -184,7 +184,7 @@ jobs:
         docker save bybit-trading-bot:${{ github.sha }} | gzip > bot-image.tar.gz
     
     - name: Upload Docker image
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-image
         path: bot-image.tar.gz

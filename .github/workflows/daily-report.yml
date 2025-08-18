@@ -65,7 +65,7 @@ jobs:
         UPTIME: ${{ steps.metrics.outputs.uptime }}
     
     - name: Upload Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: daily-report-$(date +%Y%m%d)
         path: daily_report.md
