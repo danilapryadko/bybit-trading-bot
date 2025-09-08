@@ -12,5 +12,5 @@ flake8==6.1.0
 mypy==1.7.1
 
 # Security
-safety==2.3.5
+safety==3.6.1
 bandit==1.7.5
