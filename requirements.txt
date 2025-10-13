@@ -6,7 +6,7 @@ numpy==1.26.2
 
 # Database
 psycopg2-binary==2.9.9
-sqlalchemy==2.0.23
+sqlalchemy==2.0.44
 
 # API Framework
 fastapi==0.104.1
